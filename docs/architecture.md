@@ -32,11 +32,13 @@ Key service modules:
 | `web/views.py` | server-rendered Python frontend (login, dashboard, students, generator, approval, public pages) |
 
 ## Frontend
-- **Primary:** server-rendered Django templates in `backend/web/templates/web/` (no separate frontend build needed).
-- **Alternative (React API client):** `frontend/` — a Vite + React app that consumes the same `/api` endpoints (dev server proxies to `http://127.0.0.1:8002`).
+- **Primary (and only shipped frontend):** server-rendered Django templates in `backend/web/templates/web/` — pure Python, no separate build step.
+- CSS is a single hand-written stylesheet (`backend/web/static/web/global.css`) with pure-CSS chart bars — no JavaScript required.
+- A prior React/Vite API client is preserved for reference under `archive/frontend-react/` (not part of the runtime).
 
 ## Security & Roles
-- JWT (simplejwt) for API; session auth for the rendered frontend.
+- Session-based authentication for the rendered pages (`@login_required`, `@role_required`).
+- JWT (simplejwt) for the `/api/` REST endpoints.
 - Per-role queryset scoping: students/parents only see their own records; teachers see assigned students; HR sees everything.
-- `IsHROrReadOnly`, `IsOwnerOrHR`, `IsOwnerOrHROrTeacher` permission classes.
+- `IsHROrReadOnly`, `IsOwnerOrHR`, `IsOwnerOrHROrTeacher` permission classes for the API.
 - Audit logging on create/delete and every portfolio review action.

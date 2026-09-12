@@ -58,6 +58,7 @@ class Portfolio(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug and self.student_id:
             base = slugify(f'{self.student.name}-{self.student.register_number}')[:80]
+            base = base or f'student-{self.student_id}'
             slug, n = base, 2
             while Portfolio.objects.filter(slug=slug).exclude(pk=self.pk).exists():
                 slug = f'{base}-{n}'

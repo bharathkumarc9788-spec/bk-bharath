@@ -10,8 +10,8 @@ backend/staticfiles/
 
 # Node
 node_modules/
-frontend/dist/
-frontend/.vite/
+dist/
+.vite/
 npm-debug.log*
 
 # OS / IDE

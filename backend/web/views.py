@@ -361,11 +361,21 @@ def personal_update(request, student_id):
     fields = ('name', 'register_number', 'student_id', 'admission_number', 'email',
               'phone', 'gender', 'date_of_birth', 'department', 'address', 'city',
               'state', 'github_url', 'linkedin_url', 'professional_summary')
-    for path_field in fields:
-        value = request.POST.get(path_field, '')
-        if path_field == 'date_of_birth':
+    # Only touch fields that were actually submitted so a partial save never wipes data.
+    changed = False
+    for field in fields:
+        if field not in request.POST:
+            continue
+        value = request.POST.get(field, '')
+        if field == 'date_of_birth':
             value = _to_date(value)
-        setattr(student, path_field, value)
+        setattr(student, field, value)
+        changed = True
+
+    if not changed:
+        messages.error(request, 'No fields were submitted.')
+        return redirect(f"{reverse('web:student_detail', args=[student.id])}?tab=personal")
+
     try:
         student.save()
     except IntegrityError:
@@ -505,15 +515,9 @@ def _normalize_schema(fields):
 @login_required
 def section_add(request, student_id, section):
     student = get_object_or_404(Student, pk=student_id)
-    if not _can_edit_or_deny(request, student):
-        return redirect('web:student_detail', student_id=student.id)
 
-    spec = SECTION_REGISTRY.get(section)
-    if not spec:
-        messages.error(request, 'Unknown section.')
-        return redirect('web:student_detail', student_id=student.id)
-
-    # Teacher feedback is handled by its own endpoint.
+    # Teacher feedback is written by teachers/HR — a separate permission gate,
+    # because teachers do not otherwise get to edit a student's sections.
     if section == 'feedback':
         if request.user.role not in ('HR', 'TEACHER'):
             messages.error(request, 'Only teachers/HR can add feedback.')
@@ -522,8 +526,19 @@ def section_add(request, student_id, section):
         data['overall_rating'] = _to_int(data.get('overall_rating')) or 3
         TeacherFeedback.objects.create(student=student, teacher=request.user, **data)
         log_action(request.user, 'FEEDBACK_ADDED', 'Student', student.id)
-        messages.success(request, 'Teacher feedback added')
+        if request.user.role == 'TEACHER' and not student.teachers_assigned.filter(user=request.user).exists():
+            messages.warning(request, 'Feedback saved. You are not assigned to this student in the system.')
+        else:
+            messages.success(request, 'Teacher feedback added')
         return redirect(_section_tab_redirect(student_id, 'feedback'))
+
+    if not _can_edit_or_deny(request, student):
+        return redirect('web:student_detail', student_id=student.id)
+
+    spec = SECTION_REGISTRY.get(section)
+    if not spec:
+        messages.error(request, 'Unknown section.')
+        return redirect('web:student_detail', student_id=student.id)
 
     data = clean_section_data(section, {k: request.POST.get(k, '') for k in spec['fields']})
     try:

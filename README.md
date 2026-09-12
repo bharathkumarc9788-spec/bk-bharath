@@ -1,16 +1,18 @@
 # Student Portfolio Automation System
 
-A student portfolio automation platform — 360° digital portfolios with profile
-completion tracking, portfolio generation, an approval/publish workflow, public
-portfolio pages and QR codes.
+A **pure-Python** student portfolio automation platform — 360° digital portfolios
+with profile completion tracking, portfolio generation, an approval/publish
+workflow, public portfolio pages and QR codes. The whole website is rendered by
+Django (Python) with no separate frontend build step.
 
 ## Architecture
 
 - **Backend & Frontend (Python):** `backend/` — a single Django project.
   The frontend is **server-rendered Python** (Django views + templates in the
-  `web` app), served directly by Django at `http://localhost:8000/`.
-  There is no JavaScript frontend. The React/Vite code that previously lived in
-  `frontend/` has been replaced and is preserved under `archive/frontend-react/`.
+  `web` app), served directly by Django at `http://127.0.0.1:8002/`.
+  There is no separate JavaScript frontend. (A React/Vite API client that
+  previously lived in `frontend/` is preserved for reference under
+  `archive/frontend-react/`.)
 
 | Layer        | Location                       |
 |--------------|--------------------------------|
@@ -18,7 +20,8 @@ portfolio pages and QR codes.
 | URL routes   | `backend/web/urls.py`          |
 | Templates    | `backend/web/templates/web/`   |
 | Styles       | `backend/web/static/web/`      |
-| REST API     | `backend/*/views.py` (kept for programmatic access) |
+| Django admin | `/admin/` (HR superuser)       |
+| REST API     | `/api/` (backend apps)         |
 
 ## Run it
 
@@ -39,9 +42,14 @@ Open <http://127.0.0.1:8002> and sign in with a demo account:
 
 ## Environment variables (`.env`)
 
-See `.env.example`. `FRONTEND_URL` defaults to `http://localhost:8000` because
-the Python frontend is served by Django itself (used for public portfolio URLs
-and the QR-code generator).
+See `.env.example`. `FRONTEND_URL` defaults to `http://127.0.0.1:8002` — the
+Python frontend is served by Django itself and this value is used for public
+portfolio URLs and the QR-code generator.
+
+### Student demo login
+
+Each seeded student has a login account: **username = student email**,
+**password = `student123`** (e.g. `priya@college.edu / student123`).
 
 ## Key features
 
