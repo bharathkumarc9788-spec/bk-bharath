@@ -5,6 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Student Portfolio Automation{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎒</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'web/global.css' %}">
 </head>
 <body>
@@ -12,9 +16,13 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <span class="logo">🎒</span>
-      <span>PortfolioSystem</span>
+      <span class="brand-text">
+        <span class="brand-name">PortfolioSystem</span>
+        <span class="brand-tag">360° Portfolios</span>
+      </span>
     </div>
     <nav>
+      <div class="sidebar-label">General</div>
       <a class="{% if request.path == '/dashboard/' or request.path == '/' %}active{% endif %}" href="/dashboard">
         <span>📊</span>Dashboard
       </a>
@@ -22,6 +30,7 @@
         <span>🎓</span>Students
       </a>
       {% if user.role == 'HR' %}
+      <div class="sidebar-label">Manage</div>
       <a class="{% if request.path == '/students/new/' %}active{% endif %}" href="/students/new">
         <span>➕</span>Add Student
       </a>
@@ -29,8 +38,9 @@
         <span>📤</span>Bulk Upload
       </a>
       {% endif %}
+      <div class="sidebar-label">Portfolios</div>
       <a class="{% if '/portfolio/generator' in request.path %}active{% endif %}" href="/portfolio/generator">
-        <span>⚙️</span>Portfolio Generator
+        <span>⚙️</span>Generator
       </a>
       <a class="{% if '/portfolio/templates' in request.path %}active{% endif %}" href="/portfolio/templates">
         <span>🎨</span>Templates
@@ -46,31 +56,35 @@
         <span>📈</span>Analytics
       </a>
       {% endif %}
+      <div class="sidebar-label">System</div>
       <a class="{% if '/notifications' in request.path %}active{% endif %}" href="/notifications">
         <span>🔔</span>Notifications
       </a>
     </nav>
-    <div class="sidebar-footer">Student Portfolio Automation System v1.0</div>
+    <div class="sidebar-footer">
+      <b>Student Portfolio Automation</b><br>
+      v1.0 · secured · audit-logged
+    </div>
   </aside>
 
   <div class="main">
     <header class="topbar">
       <div>
         <h2>{% block page_title %}Dashboard{% endblock %}</h2>
-        {% block page_subtitle %}{% endblock %}
+        {% block page_subtitle %}<div class="topbar-title-sub">Welcome back — here's an overview of everything.</div>{% endblock %}
       </div>
       <div class="topbar-right">
-        <a href="/notifications" class="btn btn-sm">🔔</a>
+        <a href="/notifications" class="btn btn-sm" title="Notifications">🔔</a>
         <div class="topbar-user">
           <span class="avatar">{% if user.first_name|first or user.last_name|first %}{{ user.first_name|first }}{{ user.last_name|first }}{% else %}U{% endif %}</span>
           <div>
             <div>{{ user.get_full_name|default:user.username }}</div>
-            <div class="muted" style="font-size:12px">{{ user.get_role_display }}</div>
+            <div class="topbar-role">{{ user.get_role_display }}</div>
           </div>
         </div>
         <form method="post" action="/logout/">
           {% csrf_token %}
-          <button class="btn btn-sm" type="submit">Logout</button>
+          <button class="btn btn-ghost btn-sm" type="submit">Logout</button>
         </form>
       </div>
     </header>

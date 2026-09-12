@@ -53,6 +53,7 @@ Each seeded student has a login account: **username = student email**,
 
 ## Key features
 
+- Premium, responsive UI (pure CSS — gradients, glassmorphism, animations; no JS)
 - Login / logout / role-based navigation (HR, STUDENT, TEACHER, PARENT)
 - Dashboard with KPIs + server-computed charts (pure CSS bars, no JS)
 - Student CRUD, search/filter, 360-degree profile with 10 sections

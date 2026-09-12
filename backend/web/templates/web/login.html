@@ -5,18 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In — Student Portfolio Automation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎒</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'web/global.css' %}">
 </head>
 <body>
 <div class="login-page">
   <div class="login-card">
-    <div style="text-align:center; margin-bottom:16px"><div style="font-size:42px">🎒</div></div>
-    <h1 style="text-align:center">Student Portfolio Automation</h1>
-    <p class="sub" style="text-align:center">360° digital portfolios with approval, publishing &amp; QR.</p>
+    <div class="login-brand">🎒</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Sign in to the Student Portfolio Automation dashboard · 360° portfolios with approval, publishing &amp; QR.</p>
 
     {% if messages %}
       {% for m in messages %}
-        <div class="badge badge-red mb" style="padding:8px 12px">{{ m }}</div>
+        <div class="badge badge-red mb" style="padding:9px 14px; display:flex">{{ m }}</div>
       {% endfor %}
     {% endif %}
 
@@ -24,17 +28,17 @@
       {% csrf_token %}
       <div class="form-group mb">
         <label>Username</label>
-        <input name="username" value="{{ username }}" required autofocus>
+        <input name="username" value="{{ username }}" placeholder="e.g. admin" required autofocus>
       </div>
       <div class="form-group mb">
         <label>Password</label>
-        <input type="password" name="password" value="{{ password }}" required>
+        <input type="password" name="password" value="{{ password }}" placeholder="••••••••" required>
       </div>
-      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center">Sign In</button>
+      <button class="btn btn-primary" type="submit">Sign In <span style="margin-left:2px">→</span></button>
     </form>
 
     <div class="demo-box">
-      <b>Demo accounts</b><br>
+      <b>✨ Demo accounts</b><br>
       👩‍💼 HR Admin — admin / admin123<br>
       👨‍🏫 Teacher — teacher / teacher123<br>
       👨‍👩‍👧 Parent — parent / parent123
