@@ -60,10 +60,10 @@ class PortfolioViewSet(viewsets.ModelViewSet):
 
     def _can_generate(self, student):
         user = self.request.user
-        return user.role == 'HR' or (user.role == 'STUDENT' and student.user_id == user.id)
+        return user.role in ('SUPER_ADMIN', 'HR') or (user.role == 'STUDENT' and student.user_id == user.id)
 
     def _can_review(self):
-        return self.request.user.role in ('HR', 'TEACHER')
+        return self.request.user.role in ('SUPER_ADMIN', 'HR', 'TEACHER')
 
     @action(detail=False, methods=['post'])
     def generate(self, request):

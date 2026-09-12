@@ -34,6 +34,6 @@ class UserViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'HR':
+        if user.role in ('SUPER_ADMIN', 'HR'):
             return self.queryset
         return self.queryset.filter(id=user.id)

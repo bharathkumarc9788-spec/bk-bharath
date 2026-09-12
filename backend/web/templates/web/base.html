@@ -22,44 +22,20 @@
       </span>
     </div>
     <nav>
-      <div class="sidebar-label">General</div>
-      <a class="{% if request.path == '/dashboard/' or request.path == '/' %}active{% endif %}" href="/dashboard">
-        <span>📊</span>Dashboard
-      </a>
-      <a class="{% if '/students' in request.path %}active{% endif %}" href="/students">
-        <span>🎓</span>Students
-      </a>
-      {% if user.role == 'HR' %}
-      <div class="sidebar-label">Manage</div>
-      <a class="{% if request.path == '/students/new/' %}active{% endif %}" href="/students/new">
-        <span>➕</span>Add Student
-      </a>
-      <a class="{% if '/bulk-upload' in request.path %}active{% endif %}" href="/bulk-upload">
-        <span>📤</span>Bulk Upload
-      </a>
-      {% endif %}
-      <div class="sidebar-label">Portfolios</div>
-      <a class="{% if '/portfolio/generator' in request.path %}active{% endif %}" href="/portfolio/generator">
-        <span>⚙️</span>Generator
-      </a>
-      <a class="{% if '/portfolio/templates' in request.path %}active{% endif %}" href="/portfolio/templates">
-        <span>🎨</span>Templates
-      </a>
-      {% if user.role == 'HR' or user.role == 'TEACHER' %}
-      <a class="{% if '/portfolio/approval' in request.path %}active{% endif %}" href="/portfolio/approval">
-        <span>✅</span>Approvals
-      </a>
-      <a class="{% if '/portfolio/published' in request.path %}active{% endif %}" href="/portfolio/published">
-        <span>🌐</span>Published
-      </a>
-      <a class="{% if '/analytics' in request.path %}active{% endif %}" href="/analytics">
-        <span>📈</span>Analytics
-      </a>
-      {% endif %}
-      <div class="sidebar-label">System</div>
-      <a class="{% if '/notifications' in request.path %}active{% endif %}" href="/notifications">
-        <span>🔔</span>Notifications
-      </a>
+      {% for group in nav_groups %}
+        <div class="sidebar-label">{{ group.name }}</div>
+        {% for m in group.items %}
+          {% if m.kind == 'live' and m.url %}
+            <a class="{% if request.path == m.url %}active{% endif %}" href="{{ m.url }}" title="{{ m.desc }}">
+              <span>{{ m.icon }}</span>{{ m.label }}
+            </a>
+          {% else %}
+            <span class="side-soon" title="{{ m.desc }} (coming soon)">
+              <span>{{ m.icon }}</span>{{ m.label }}<em>Soon</em>
+            </span>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
     </nav>
     <div class="sidebar-footer">
       <b>Student Portfolio Automation</b><br>

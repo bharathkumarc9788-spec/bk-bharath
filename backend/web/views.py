@@ -59,7 +59,8 @@ def role_required(*roles):
         def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
                 return redirect('web:login')
-            if roles and request.user.role not in roles:
+            if roles and request.user.role not in roles and not (
+                    'HR' in roles and request.user.role == 'SUPER_ADMIN'):
                 messages.error(request, 'You do not have access to that page.')
                 return redirect('web:dashboard')
             return view(request, *args, **kwargs)
@@ -87,8 +88,8 @@ def visible_portfolios(user):
 
 
 def can_edit_student(student, user):
-    """HR may edit all; a student may edit their own profile."""
-    return user.role == 'HR' or (user.role == 'STUDENT' and student.user_id == user.id)
+    """Management may edit all; a student may edit their own profile."""
+    return user.role in ('SUPER_ADMIN', 'HR') or (user.role == 'STUDENT' and student.user_id == user.id)
 
 
 def _to_date(value):
@@ -194,13 +195,27 @@ def reset_password(request):
 
 @login_required
 def dashboard(request):
-    base = _BaseDashboard()
-    user = request.user
+    """Role-aware dashboard.
 
-    if user.role == 'TEACHER' and hasattr(user, 'teacher_profile'):
-        students = user.teacher_profile.students.all()
-    else:
-        students = Student.objects.all()
+    SUPER_ADMIN / HR  → management overview (KPIs, charts, approval queue)
+    TEACHER           → teaching overview (assigned students, review queue)
+    STUDENT           → personal overview (own progress + portfolio status)
+    PARENT            → monitoring overview (child's profile overview)
+    """
+    user = request.user
+    base = _BaseDashboard()
+
+    if user.role in ('SUPER_ADMIN', 'HR'):
+        return _dashboard_management(request, user, base)
+    if user.role == 'TEACHER':
+        return _dashboard_teacher(request, user, base)
+    if user.role == 'PARENT':
+        return _dashboard_parent(request, user, base)
+    return _dashboard_student(request, user, base)
+
+
+def _dashboard_management(request, user, base):
+    students = Student.objects.all()
     portfolios = Portfolio.objects.all()
 
     kpis = base._kpis(students, portfolios)
@@ -228,6 +243,7 @@ def dashboard(request):
     recent_activities = AuditLog.objects.all()[:12]
 
     return render(request, 'web/dashboard.html', {
+        'view_role': 'management',
         'kpis': kpis,
         'completion_bins': bins,
         'bins_max': max([b['value'] for b in bins] or [1]),
@@ -238,7 +254,48 @@ def dashboard(request):
         'approval_queue': approval_queue,
         'recent_students': recent_students,
         'recent_activities': recent_activities,
-        'is_teacher': user.role == 'TEACHER',
+        'is_teacher': False,
+        'role_title': 'Management Overview',
+    })
+
+
+def _dashboard_teacher(request, user, base):
+    teacher = getattr(user, 'teacher_profile', None)
+    if teacher:
+        students = teacher.students.all()
+        portfolios = Portfolio.objects.filter(student__teachers_assigned=teacher)
+    else:
+        students = Student.objects.none()
+        portfolios = Portfolio.objects.none()
+
+    kpis = base._kpis(students, portfolios)
+    support = base._support_students(students)
+
+    approval_queue = portfolios.filter(
+        status__in=[Portfolio.Status.SUBMITTED, Portfolio.Status.UNDER_REVIEW]
+    ).order_by('updated_at')[:8]
+
+    recent_students = [{
+        'id': s.id, 'name': s.name, 'register_number': s.register_number,
+        'department': s.department, 'email': s.email,
+        'photo': s.profile_photo.url if s.profile_photo else '',
+        'completion': overall_completion(s),
+    } for s in students.order_by('-created_at')[:8]]
+
+    return render(request, 'web/dashboard.html', {
+        'view_role': 'teacher',
+        'kpis': kpis,
+        'completion_bins': base._completion_bins(students),
+        'bins_max': 1,
+        'department_analysis': [],
+        'dept_max': 1,
+        'portfolio_status': [],
+        'support': support,
+        'approval_queue': approval_queue,
+        'recent_students': recent_students,
+        'recent_activities': [],
+        'is_teacher': True,
+        'role_title': 'Teaching Overview',
     })
 
 
@@ -247,7 +304,66 @@ def dashboard(request):
 # --------------------------------------------------------------------------
 
 
-@login_required
+def _dashboard_student(request, user, base):
+    student = getattr(user, 'student_profile', None)
+    if not student:
+        return render(request, 'web/dashboard.html', {
+            'view_role': 'student', 'role_title': 'Student Overview',
+        })
+    portfolio = student.portfolios.first()
+    status_counts = []
+    if portfolio:
+        status_counts.append({'status': portfolio.status, 'label': portfolio.get_status_display(), 'count': 1})
+    return render(request, 'web/dashboard.html', {
+        'view_role': 'student',
+        'student': student,
+        'completion': overview(student),
+        'portfolio': portfolio,
+        'portfolio_status': status_counts,
+        'recent_activities': [],
+        'support': [],
+        'role_title': 'My Student Dashboard',
+        'kpis': {'total_students': 1,
+                 'portfolios_generated': 1 if portfolio else 0,
+                 'pending_approval': 1 if portfolio and portfolio.status in ('SUBMITTED', 'UNDER_REVIEW') else 0,
+                 'published_portfolios': 1 if portfolio and portfolio.status == 'PUBLISHED' else 0,
+                 'incomplete_profiles': 1 if overall_completion(student) < 100 else 0,
+                 'portfolio_views': portfolio.views_count if portfolio else 0,
+                 'avg_completion': overall_completion(student)},
+        'completion_bins': base._completion_bins(Student.objects.filter(pk=student.pk)),
+        'bins_max': 1,
+        'department_analysis': [],
+        'dept_max': 1,
+        'approval_queue': [],
+    })
+
+
+def _dashboard_parent(request, user, base):
+    parent = getattr(user, 'parent_profile', None)
+    children = parent.students.all() if parent else Student.objects.none()
+
+    children_info = [{
+        'id': s.id, 'name': s.name, 'register_number': s.register_number,
+        'department': s.department, 'email': s.email,
+        'completion': overall_completion(s),
+        'portfolio_status': s.portfolios.first().status if s.portfolios.exists() else None,
+    } for s in children]
+
+    return render(request, 'web/dashboard.html', {
+        'view_role': 'parent',
+        'children': children_info,
+        'role_title': 'Parent Dashboard',
+        'kpis': {'total_students': len(children_info),
+                 'portfolios_generated': 0, 'pending_approval': 0,
+                 'published_portfolios': 0, 'incomplete_profiles': 0,
+                 'portfolio_views': 0, 'avg_completion': 0},
+        'completion_bins': [], 'bins_max': 1,
+        'department_analysis': [], 'dept_max': 1,
+        'portfolio_status': [], 'support': [], 'approval_queue': [],
+        'recent_students': [], 'recent_activities': [], 'is_teacher': False,
+    })
+
+
 def students_list(request):
     qs = visible_students(request.user)
 
@@ -282,7 +398,7 @@ def students_list(request):
         'search': search,
         'department': department,
         'status': status_filter,
-        'is_hr': request.user.role == 'HR',
+        'is_hr': request.user.role in ('SUPER_ADMIN', 'HR'),
     })
 
 
@@ -329,8 +445,8 @@ def student_detail(request, student_id):
         'tab': request.GET.get('tab', 'overview'),
         'show_form': request.GET.get('new') == '1',
         'can_edit': can_edit_student(student, user),
-        'can_review': user.role in ('HR', 'TEACHER'),
-        'is_hr': user.role == 'HR',
+        'can_review': user.role in ('SUPER_ADMIN', 'HR', 'TEACHER'),
+        'is_hr': user.role in ('SUPER_ADMIN', 'HR'),
         'education': student.education_records.all(),
         'skills': student.skills.all(),
         'projects': student.projects.all(),
@@ -519,7 +635,7 @@ def section_add(request, student_id, section):
     # Teacher feedback is written by teachers/HR — a separate permission gate,
     # because teachers do not otherwise get to edit a student's sections.
     if section == 'feedback':
-        if request.user.role not in ('HR', 'TEACHER'):
+        if request.user.role not in ('SUPER_ADMIN', 'HR', 'TEACHER'):
             messages.error(request, 'Only teachers/HR can add feedback.')
             return redirect(_section_tab_redirect(student_id, section))
         data = {k: request.POST.get(k, '') for k in FEEDBACK_FIELDS}
@@ -648,7 +764,7 @@ TEMPLATE_ICONS = {
 
 
 def _can_generate(user, student):
-    return user.role == 'HR' or (user.role == 'STUDENT' and student.user_id == user.id)
+    return user.role in ('SUPER_ADMIN', 'HR') or (user.role == 'STUDENT' and student.user_id == user.id)
 
 
 @login_required
@@ -735,7 +851,7 @@ def portfolio_submit(request, pk):
 @login_required
 def portfolio_publish(request, pk):
     portfolio = _get_portfolio_for(request, pk)
-    if portfolio and request.user.role in ('HR', 'TEACHER'):
+    if portfolio and request.user.role in ('SUPER_ADMIN', 'HR', 'TEACHER'):
         try:
             publish_portfolio(portfolio, request.user)
         except ValueError as exc:
@@ -750,7 +866,7 @@ def portfolio_publish(request, pk):
 @login_required
 def portfolio_review(request, pk):
     portfolio = _get_portfolio_for(request, pk)
-    if not portfolio or request.user.role not in ('HR', 'TEACHER'):
+    if not portfolio or request.user.role not in ('SUPER_ADMIN', 'HR', 'TEACHER'):
         messages.error(request, 'Not authorized.')
         return redirect('web:portfolio_approval')
     action = request.POST.get('action')

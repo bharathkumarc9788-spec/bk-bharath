@@ -2,9 +2,10 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class IsHR(BasePermission):
-    """HR / Admin only."""
+    """Super Admin / HR only."""
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.role == 'HR'
+        return (request.user and request.user.is_authenticated
+                and request.user.role in ('SUPER_ADMIN', 'HR'))
 
 
 class IsStudent(BasePermission):
@@ -18,21 +19,21 @@ class IsTeacher(BasePermission):
 
 
 class IsHROrReadOnly(BasePermission):
-    """HR full access; others read-only."""
+    """Super Admin/HR full access; others read-only."""
     def has_permission(self, request, view):
         user = request.user
         if not (user and user.is_authenticated):
             return False
-        if user.role == 'HR':
+        if user.role in ('SUPER_ADMIN', 'HR'):
             return True
         return request.method in SAFE_METHODS
 
 
 class IsOwnerOrHR(BasePermission):
-    """Owner may edit own record; HR may edit all; others read-only."""
+    """Owner may edit own record; Super Admin/HR may edit all; others read-only."""
     def has_object_permission(self, request, view, obj):
         user = request.user
-        if user.role == 'HR':
+        if user.role in ('SUPER_ADMIN', 'HR'):
             return True
         owner = getattr(obj, 'student', None)
         if owner and owner.user_id == user.id:
@@ -41,10 +42,10 @@ class IsOwnerOrHR(BasePermission):
 
 
 class IsOwnerOrHROrTeacher(BasePermission):
-    """Owners and HR may write; teachers read-only."""
+    """Owners and Super Admin/HR/Teachers may write; others read-only."""
     def has_object_permission(self, request, view, obj):
         user = request.user
-        if user.role in ('HR', 'TEACHER'):
+        if user.role in ('SUPER_ADMIN', 'HR', 'TEACHER'):
             return True
         owner = getattr(obj, 'student', None)
         if owner and owner.user_id == user.id:

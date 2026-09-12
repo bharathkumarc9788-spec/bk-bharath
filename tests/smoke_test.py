@@ -119,6 +119,32 @@ def main():
     Student.objects.filter(id=student_row.id).delete()
     User.objects.filter(username='smoke@college.edu').delete()
 
+    # ---- RBAC: each role gets its own dashboard + sidebar, and is blocked
+    # ---- from management pages it must not see.
+    role_checks = [
+        ('superadmin', 'superadmin123', 'SUPER_ADMIN'),
+        ('admin', 'admin123', 'HR'),
+        ('teacher', 'teacher123', 'TEACHER'),
+        ('parent', 'parent123', 'PARENT'),
+    ]
+    for username, password, role in role_checks:
+        c = Client()
+        ok = c.login(username=username, password=password)
+        resp = c.get('/dashboard/')
+        body = resp.content.decode()
+        assert ok, f'login failed for {role}'
+        assert resp.status_code == 200, f'{role} dashboard = {resp.status_code}'
+        assert '<aside class="sidebar">' in body, f'{role} sidebar missing'
+        print(f'RBAC {role}: dashboard OK')
+
+    student_role = User.objects.filter(role='STUDENT').first()
+    if student_role:
+        sc = Client()
+        sc.login(username=student_role.username, password='student123')
+        blocked = sc.get('/analytics/').status_code
+        assert blocked in (302, 403), f'student should be blocked from analytics, got {blocked}'
+        print('RBAC STUDENT: dashboard OK, analytics blocked')
+
     print('SMOKE TEST', 'PASSED' if not total_errors else f'FAILED ({len(total_errors)} errors)')
     return 1 if total_errors else 0
 

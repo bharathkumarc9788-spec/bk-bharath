@@ -38,12 +38,24 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Linked {count} student login accounts (password: student123)'))
 
     def seed_users(self):
+        # Super Admin — full system control
+        super_admin, _ = User.objects.get_or_create(
+            username='superadmin',
+            defaults={'role': 'SUPER_ADMIN', 'email': 'superadmin@college.edu',
+                      'first_name': 'Super', 'last_name': 'Admin', 'is_staff': True,
+                      'is_superuser': True})
+        super_admin.set_password('superadmin123')
+        super_admin.save()
+
+        # HR / Admin — management
         hr, _ = User.objects.get_or_create(
             username='admin',
             defaults={'role': 'HR', 'email': 'hr@college.edu',
-                      'first_name': 'HR', 'last_name': 'Admin', 'is_staff': True,
-                      'is_superuser': True})
+                      'first_name': 'HR', 'last_name': 'Admin'})
         hr.set_password('admin123')
+        hr.role = 'HR'
+        hr.is_superuser = False
+        hr.is_staff = False
         hr.save()
 
         teacher_user, _ = User.objects.get_or_create(
@@ -75,7 +87,8 @@ class Command(BaseCommand):
         for s in Stu.objects.all()[:6]:
             teacher.students.add(s)
         self.stdout.write(self.style.SUCCESS(
-            'Seeded users -> admin/admin123 | teacher/teacher123 | parent/parent123'))
+            'Seeded users -> superadmin/superadmin123 | admin/admin123 | '
+            'teacher/teacher123 | parent/parent123'))
 
     def seed_templates(self):
         from portfolio.models import PortfolioTemplate

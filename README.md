@@ -36,9 +36,38 @@ python manage.py runserver 8002  # → http://127.0.0.1:8002 (8000/8001 may be t
 
 Open <http://127.0.0.1:8002> and sign in with a demo account:
 
-- **HR Admin** — `admin / admin123`
-- **Teacher** — `teacher / teacher123`
-- **Parent** — `parent / parent123`
+| Role | Username | Password | Sees |
+|------|----------|----------|------|
+| 🛡️ **Super Admin** | `superadmin` | `superadmin123` | full system (all modules) |
+| 👩‍💼 **HR / Admin** | `admin` | `admin123` | management + portfolio workflow |
+| 👨‍🏫 **Teacher** | `teacher` | `teacher123` | teaching + review modules |
+| 👨‍👩‍👧 **Parent** | `parent` | `parent123` | child monitoring modules |
+| 🎓 **Student** | `<student email>` | `student123` | own 360° modules (e.g. `priya@college.edu`) |
+
+## Role-Based Modules (RBAC)
+
+Every module assignment is defined in **Python** in `backend/common/modules.py`
+(single source of truth) and injected into the sidebar per role through a
+template context processor. Planned modules render as grayed-out **"Soon"**
+items so the full role taxonomy is visible.
+
+| Module | Super Admin | HR/Admin | Teacher | Student | Parent |
+|--------|:-:|:-:|:-:|:-:|:-:|
+| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ |
+| User / Role & Permission Mgmt | ✅ | — | — | — | — |
+| School / College Mgmt | ✅ | — | — | — | — |
+| Student Management | ✅ | ✅ | ✅ (mine) | — | — |
+| Add Student / Bulk Upload | ✅ | ✅ | — | — | — |
+| Teacher / Parent Management | ✅ | — | — | — | — |
+| Academic / Attendance / Exams / Homework / LMS | ✅ | ✅ | ✅ | ✅ | — |
+| Marks Entry / Academic Reports | ✅ | ✅ | ✅ | — | — |
+| 360° Skills / Projects / Internships / Certs / Achievements | ✅ | ✅ | ✅ | ✅ | ✅ (view) |
+| Portfolio Generator / Templates / Review / Approval / Publish | ✅ | ✅ | ✅ | ✅ | — |
+| Analytics / Reports / Audit Logs | ✅ | ✅ | ✅ | — | — |
+| Notifications | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+Role-specific dashboards: after login the app checks the role and renders the
+matching dashboard (management / teaching / student / parent views).
 
 ## Environment variables (`.env`)
 

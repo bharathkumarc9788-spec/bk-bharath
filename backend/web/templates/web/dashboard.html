@@ -1,90 +1,69 @@
 {% extends 'web/base.html' %}
 {% load web_extras %}
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}{{ role_title|default:'Dashboard' }}{% endblock %}
+{% block page_subtitle %}{% if view_role == 'management' %}Welcome back — here's an overview of everything.{% elif view_role == 'teacher' %}Your classes, students and review tasks at a glance.{% elif view_role == 'student' %}Your 360° progress and portfolio status.{% elif view_role == 'parent' %}Keep track of your child's development.{% endif %}{% endblock %}
 {% block content %}
 
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="icon" style="background:#4f46e51a;color:#4f46e5">🎓</div>
-    <div><div class="value">{{ kpis.total_students }}</div><div class="label">Total Students</div></div>
+{% if view_role == 'management' %}
+  <div class="stat-grid">
+    <div class="stat-card"><div class="icon" style="background:#6366f11a;color:#4f46e5">🧑‍🎓</div>
+      <div><div class="value">{{ kpis.total_students }}</div><div class="label">Total Students</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#0ea5e91a;color:#0ea5e9">📄</div>
+      <div><div class="value">{{ kpis.portfolios_generated }}</div><div class="label">Portfolios Generated</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#f59e0b1a;color:#f59e0b">⏳</div>
+      <div><div class="value">{{ kpis.pending_approval }}</div><div class="label">Pending Approval</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#8b5cf61a;color:#8b5cf6">🌐</div>
+      <div><div class="value">{{ kpis.published_portfolios }}</div><div class="label">Published</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#ef44441a;color:#ef4444">🗂️</div>
+      <div><div class="value">{{ kpis.incomplete_profiles }}</div><div class="label">Incomplete Profiles</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#22c55e1a;color:#22c55e">👁️</div>
+      <div><div class="value">{{ kpis.portfolio_views }}</div><div class="label">Portfolio Views</div></div></div>
   </div>
-  <div class="stat-card">
-    <div class="icon" style="background:#0ea5e91a;color:#0ea5e9">📄</div>
-    <div><div class="value">{{ kpis.portfolios_generated }}</div><div class="label">Portfolios Generated</div></div>
-  </div>
-  <div class="stat-card">
-    <div class="icon" style="background:#f59e0b1a;color:#f59e0b">⏳</div>
-    <div><div class="value">{{ kpis.pending_approval }}</div><div class="label">Pending Approval</div></div>
-  </div>
-  <div class="stat-card">
-    <div class="icon" style="background:#8b5cf61a;color:#8b5cf6">🌐</div>
-    <div><div class="value">{{ kpis.published_portfolios }}</div><div class="label">Published</div></div>
-  </div>
-  <div class="stat-card">
-    <div class="icon" style="background:#ef44441a;color:#ef4444">🗂️</div>
-    <div><div class="value">{{ kpis.incomplete_profiles }}</div><div class="label">Incomplete Profiles</div></div>
-  </div>
-  <div class="stat-card">
-    <div class="icon" style="background:#22c55e1a;color:#22c55e">👁️</div>
-    <div><div class="value">{{ kpis.portfolio_views }}</div><div class="label">Portfolio Views</div></div>
-  </div>
-</div>
 
-<div class="grid-2">
-  <div class="card">
-    <h3>Profile Completion Distribution</h3>
-    <div class="chart-bars">
-      {% for b in completion_bins %}
-        <div class="chart-bar-col">
-          {% if b.value %}
-            <div class="chart-bar-fill" style="height:{% widthratio b.value bins_max 100 %}%"></div>
-          {% else %}
-            <div class="chart-bar-empty"></div>
-          {% endif %}
-          <div class="chart-bar-label"><b>{{ b.value }}</b></div>
-          <div class="chart-bar-label">{{ b.label }}</div>
-        </div>
-      {% endfor %}
+  <div class="grid-2">
+    <div class="card">
+      <h3>Profile Completion Distribution</h3>
+      <div class="chart-bars">
+        {% for b in completion_bins %}
+          <div class="chart-bar-col">
+            {% if b.value %}<div class="chart-bar-fill" style="height:{% widthratio b.value bins_max 100 %}%"></div>
+            {% else %}<div class="chart-bar-empty"></div>{% endif %}
+            <div class="chart-bar-label"><b>{{ b.value }}</b></div>
+            <div class="chart-bar-label">{{ b.label }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Portfolio Status</h3>
+      {% if portfolio_status %}
+        {% for s in portfolio_status %}
+          <div class="hbar-row">
+            <div class="hbar-label"><span class="badge {{ s.status|status_badge }}">{{ s.status|humanize }}</span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio s.count kpis.portfolios_generated 100 %}%"></div></div>
+            <div class="hbar-value">{{ s.count }}</div>
+          </div>
+        {% endfor %}
+      {% else %}<div class="empty">No portfolios yet — generate one!</div>{% endif %}
     </div>
   </div>
-  <div class="card">
-    <h3>Portfolio Status</h3>
-    {% if portfolio_status %}
-      {% for s in portfolio_status %}
-        <div class="hbar-row">
-          <div class="hbar-label"><span class="badge {{ s.status|status_badge }}">{{ s.status|humanize }}</span></div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio s.count kpis.portfolios_generated 100 %}%"></div></div>
-          <div class="hbar-value">{{ s.count }}</div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty">No portfolios yet — generate one!</div>
-    {% endif %}
-  </div>
-</div>
 
-<div class="grid-2">
-  <div class="card">
-    <h3>Department Analysis</h3>
-    {% if department_analysis %}
-      {% for d in department_analysis %}
-        <div class="hbar-row">
-          <div class="hbar-label">{{ d.department }}</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio d.count dept_max 100 %}%"></div></div>
-          <div class="hbar-value">{{ d.count }}</div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty">No department data</div>
-    {% endif %}
-  </div>
-  <div class="card">
-    <div class="card-title">
-      <h3>Students Requiring Support</h3>
-      <a href="/students">All students →</a>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Department Analysis</h3>
+      {% if department_analysis %}
+        {% for d in department_analysis %}
+          <div class="hbar-row">
+            <div class="hbar-label">{{ d.department }}</div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio d.count dept_max 100 %}%"></div></div>
+            <div class="hbar-value">{{ d.count }}</div>
+          </div>
+        {% endfor %}
+      {% else %}<div class="empty">No department data</div>{% endif %}
     </div>
-    {% if support %}
-      <div style="max-height:300px; overflow-y:auto">
+    <div class="card">
+      <div class="card-title"><h3>Students Requiring Support</h3><a href="/students">All students →</a></div>
+      {% if support %}
         {% for s in support %}
           <a href="/students/{{ s.id }}/" style="display:block; color:inherit">
             <div class="list-item">
@@ -100,90 +79,184 @@
             </div>
           </a>
         {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty">Everyone looks complete 🎉</div>
-    {% endif %}
+      {% else %}<div class="empty">Everyone looks complete 🎉</div>{% endif %}
+    </div>
   </div>
-</div>
-<div class="card">
-  <div class="card-title">
-    <h3>{% if is_teacher %}My Students{% else %}Recent Students{% endif %}</h3>
-    <a href="/students">View all →</a>
+{% endif %}
+{% if view_role == 'teacher' %}
+  <div class="stat-grid">
+    <div class="stat-card"><div class="icon" style="background:#6366f11a;color:#4f46e5">🧑‍🎓</div>
+      <div><div class="value">{{ kpis.total_students }}</div><div class="label">My Students</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#0ea5e91a;color:#0ea5e9">📄</div>
+      <div><div class="value">{{ kpis.portfolios_generated }}</div><div class="label">Portfolios</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#f59e0b1a;color:#f59e0b">⏳</div>
+      <div><div class="value">{{ kpis.pending_approval }}</div><div class="label">Pending Review</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#ef44441a;color:#ef4444">🗂️</div>
+      <div><div class="value">{{ kpis.incomplete_profiles }}</div><div class="label">Need Support</div></div></div>
   </div>
-  {% if recent_students %}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Student</th><th>Register No</th><th>Department</th><th>Email</th><th>Completion</th></tr>
-        </thead>
-        <tbody>
-          {% for s in recent_students %}
-            <tr>
-              <td>
-                <a href="/students/{{ s.id }}/" style="display:flex; align-items:center; gap:8px">
+
+  <div class="card">
+    <div class="card-title"><h3>My Students</h3><a href="/students">View all →</a></div>
+    {% if recent_students %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Register No</th><th>Department</th><th>Email</th><th>Completion</th></tr></thead>
+          <tbody>
+            {% for s in recent_students %}
+              <tr>
+                <td><a href="/students/{{ s.id }}/" style="display:flex; align-items:center; gap:8px">
                   {% if s.photo %}<img class="avatar-sm" src="{{ s.photo }}" alt="{{ s.name }}">
                   {% else %}<span class="avatar-sm">{{ s.name|initial }}</span>{% endif %}
-                  <b>{{ s.name }}</b>
-                </a>
-              </td>
-              <td>{{ s.register_number }}</td>
-              <td>{{ s.department|default:'—' }}</td>
-              <td>{{ s.email|default:'—' }}</td>
-              <td style="width:140px">
-                <div class="row">
+                  <b>{{ s.name }}</b></a></td>
+                <td>{{ s.register_number }}</td>
+                <td>{{ s.department|default:'—' }}</td>
+                <td>{{ s.email|default:'—' }}</td>
+                <td style="width:140px"><div class="row">
                   <div class="progress-bar" style="flex:1;width:80px"><div class="progress-fill" style="width:{{ s.completion }}%"></div></div>
-                  <span style="font-size:12.5px">{{ s.completion }}%</span>
-                </div>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="empty"><div class="big">🎓</div>No students found.</div>
-  {% endif %}
-</div>
-
-<div class="grid-2">
-  <div class="card">
-    <div class="card-title">
-      <h3>Approval Queue</h3>
-      <a href="/portfolio/approval">Review →</a>
-    </div>
-    {% if approval_queue %}
-      {% for p in approval_queue %}
-        <a href="/portfolio/approval/?portfolio={{ p.id }}" style="display:block; color:inherit">
-          <div class="list-item">
-            <div>
-              <h4>{{ p.student.name }}</h4>
-              <div class="muted">{{ p.completion_percentage }}% complete</div>
-            </div>
-            <span class="badge {{ p.status|status_badge }}">{{ p.status|humanize }}</span>
-          </div>
-        </a>
-      {% endfor %}
-    {% else %}
-      <div class="empty">No portfolios pending approval</div>
-    {% endif %}
+                  <span style="font-size:12.5px">{{ s.completion }}%</span></div></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<div class="empty"><div class="big">🎓</div>No students assigned yet.</div>{% endif %}
   </div>
 
-  <div class="card">
-    <h3>Recent Activity</h3>
-    {% if recent_activities %}
-      {% for a in recent_activities %}
-        <div class="list-item">
-          <div>
-            <b>{{ a.action|humanize }}</b>
-            <div class="muted">by {{ a.actor.username|default:'system' }}{% if a.details %} — {{ a.details }}{% endif %}</div>
-          </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><h3>Portfolio Review Queue</h3><a href="/portfolio/approval">Review →</a></div>
+      {% if approval_queue %}
+        {% for p in approval_queue %}
+          <a href="/portfolio/approval/?portfolio={{ p.id }}" style="display:block; color:inherit">
+            <div class="list-item">
+              <div><h4>{{ p.student.name }}</h4><div class="muted">{{ p.completion_percentage }}% complete</div></div>
+              <span class="badge {{ p.status|status_badge }}">{{ p.status|humanize }}</span>
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}<div class="empty">No portfolios awaiting review</div>{% endif %}
+    </div>
+    <div class="card">
+      <h3>Students Requiring Support</h3>
+      {% if support %}
+        {% for s in support %}
+          <a href="/students/{{ s.id }}/" style="display:block; color:inherit">
+            <div class="list-item">
+              <div><h4>{{ s.name }}</h4><div class="muted">{{ s.register_number }} · {{ s.completion }}% complete</div></div>
+              <div class="mt">{% for m in s.missing %}<span class="badge badge-amber" style="margin:2px">{{ m }}</span>{% endfor %}</div>
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}<div class="empty">Everyone looks great 🎉</div>{% endif %}
+    </div>
+  </div>
+{% endif %}
+
+{% if view_role == 'student' %}
+  <div class="card" style="display:flex; gap:20px; align-items:center; flex-wrap:wrap">
+    {% if student and student.profile_photo %}
+      <img class="avatar-lg" src="{{ student.profile_photo.url }}" alt="{{ student.name }}" style="width:90px;height:90px">
+    {% else %}
+      <div class="avatar-lg" style="width:90px;height:90px; display:inline-flex; align-items:center; justify-content:center; font-size:34px">{{ student.name|first|default:'S' }}</div>
+    {% endif %}
+    <div style="flex:1; min-width:240px">
+      <div class="kicker">Student 360°</div>
+      <h2 style="font-size:26px; margin-top:6px">{{ student.name }}</h2>
+      <div class="muted">{{ student.register_number }} · {{ student.department|default:'—' }} · {{ student.email }}</div>
+      <div class="mt row">
+        <div style="width:220px"><div class="progress-bar"><div class="progress-fill" style="width:{{ completion.overall }}%"></div></div></div>
+        <span class="muted">Profile {{ completion.overall }}% complete</span>
+      </div>
+    </div>
+    <div class="row">
+      <a class="btn btn-primary" href="/portfolio/generator/?student={{ student.id }}">⚙️ My Portfolio</a>
+      <a class="btn" href="/students/">View My Profile</a>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="icon" style="background:#6366f11a;color:#4f46e5">📁</div>
+      <div><div class="value">{{ kpis.portfolios_generated }}</div><div class="label">My Portfolio</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#f59e0b1a;color:#f59e0b">⏳</div>
+      <div><div class="value">{{ kpis.pending_approval }}</div><div class="label">Pending Review</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#22c55e1a;color:#22c55e">🌐</div>
+      <div><div class="value">{{ kpis.published_portfolios }}</div><div class="label">Published</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#8b5cf61a;color:#8b5cf6">👁️</div>
+      <div><div class="value">{{ kpis.portfolio_views }}</div><div class="label">Public Views</div></div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Completion by Section</h3>
+      {% for s in completion.sections %}
+        <div class="completion-row">
+          <span class="section-name">{{ s.section }}</span>
+          <div class="bar"><div class="progress-bar"><div class="progress-fill" style="width:{{ s.percent }}%"></div></div></div>
+          <span class="muted" style="font-size:12px">{{ s.percent }}%</span>
         </div>
       {% endfor %}
-    {% else %}
-      <div class="empty">No activity yet</div>
-    {% endif %}
+    </div>
+    <div class="card">
+      <h3>Portfolio Status</h3>
+      {% if portfolio %}
+        <div class="list-item">
+          <div>
+            <h4>{{ portfolio.title }}</h4>
+            <div class="muted">Template: {{ portfolio.template.name|default:'Default' }} · {{ portfolio.completion_percentage }}% complete</div>
+          </div>
+          <span class="badge {{ portfolio.status|status_badge }}">{{ portfolio.status|humanize }}</span>
+        </div>
+        <div class="row mt">
+          <a class="btn btn-primary btn-sm" href="/portfolio/generator/?student={{ student.id }}">Open Generator</a>
+          {% if portfolio.status == 'PUBLISHED' and portfolio.slug %}
+            <a class="btn btn-sm" href="/portfolio/public/{{ portfolio.slug }}/" target="_blank">Open Public ↗</a>
+            <a class="btn btn-sm" href="/portfolio/{{ portfolio.id }}/qr/">QR ↓</a>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="empty"><div class="big">📄</div>No portfolio yet — generate yours!</div>
+        <a class="btn btn-primary" href="/portfolio/generator/?student={{ student.id }}">⚙️ Generate Portfolio</a>
+      {% endif %}
+    </div>
   </div>
-</div>
+{% endif %}
+{% if view_role == 'parent' %}
+  <div class="stat-grid">
+    <div class="stat-card"><div class="icon" style="background:#6366f11a;color:#4f46e5">🧒</div>
+      <div><div class="value">{{ kpis.total_students }}</div><div class="label">My Children</div></div></div>
+    <div class="stat-card"><div class="icon" style="background:#22c55e1a;color:#22c55e">📚</div>
+      <div><div class="value">{{ kpis.total_students }}</div><div class="label">Active 360° Portfolios</div></div></div>
+  </div>
+
+  {% if children %}
+    {% for child in children %}
+      <div class="card" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap">
+        <div class="avatar-lg" style="width:64px;height:64px; display:inline-flex; align-items:center; justify-content:center; font-size:24px">{{ child.name|first }}</div>
+        <div style="flex:1; min-width:220px">
+          <h3>{{ child.name }}</h3>
+          <div class="muted">{{ child.register_number }} · {{ child.department|default:'—' }}</div>
+          <div class="mt row" style="max-width:340px">
+            <div style="flex:1"><div class="progress-bar"><div class="progress-fill" style="width:{{ child.completion }}%"></div></div></div>
+            <span class="muted" style="font-size:12px">{{ child.completion }}% complete</span>
+          </div>
+        </div>
+        <div class="row">
+          {% if child.portfolio_status %}<span class="badge {{ child.portfolio_status|status_badge }}">{{ child.portfolio_status|humanize }}</span>{% endif %}
+          <a class="btn btn-sm" href="/students/{{ child.id }}/">View 360° Profile</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="card"><div class="empty"><div class="big">👨‍👩‍👧</div>No children linked to this account yet.</div></div>
+  {% endif %}
+
+  <div class="card">
+    <h3>Monitoring Notes</h3>
+    <p class="muted">
+      As a parent you can follow your child's academic performance, attendance,
+      homework, marks, teacher remarks and their 360° digital portfolio.
+    </p>
+  </div>
+{% endif %}
 
 {% endblock %}
