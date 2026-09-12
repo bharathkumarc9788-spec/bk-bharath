@@ -1,0 +1,50 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Student Portfolio Automation</title>
+  <link rel="stylesheet" href="{% static 'web/global.css' %}">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div style="text-align:center; margin-bottom:16px"><div style="font-size:42px">🎒</div></div>
+    <h1 style="text-align:center">Student Portfolio Automation</h1>
+    <p class="sub" style="text-align:center">360° digital portfolios with approval, publishing &amp; QR.</p>
+
+    {% if messages %}
+      {% for m in messages %}
+        <div class="badge badge-red mb" style="padding:8px 12px">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="/login/">
+      {% csrf_token %}
+      <div class="form-group mb">
+        <label>Username</label>
+        <input name="username" value="{{ username }}" required autofocus>
+      </div>
+      <div class="form-group mb">
+        <label>Password</label>
+        <input type="password" name="password" value="{{ password }}" required>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center">Sign In</button>
+    </form>
+
+    <div class="demo-box">
+      <b>Demo accounts</b><br>
+      👩‍💼 HR Admin — admin / admin123<br>
+      👨‍🏫 Teacher — teacher / teacher123<br>
+      👨‍👩‍👧 Parent — parent / parent123
+      <div class="mt">
+        <a class="btn btn-sm" href="/login/?username=admin&password=admin123">Admin</a>
+        <a class="btn btn-sm" href="/login/?username=teacher&password=teacher123">Teacher</a>
+        <a class="btn btn-sm" href="/login/?username=parent&password=parent123">Parent</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

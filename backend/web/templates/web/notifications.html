@@ -1,0 +1,38 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Notifications{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title">
+    <h3>Notifications ({{ unread }} unread)</h3>
+    <form method="post" action="/notifications/">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="mark_all">
+      <button class="btn btn-sm" type="submit">Mark all read</button>
+    </form>
+  </div>
+  {% if not items %}
+    <div class="empty"><div class="big">🔕</div>No notifications yet. Submit a portfolio to trigger some!</div>
+  {% else %}
+    {% for n in items %}
+      <div class="list-item" style="opacity:{% if n.is_read %}0.6{% else %}1{% endif %}">
+        <div class="row" style="align-items:flex-start; flex:1">
+          {% if n.event == 'PORTFOLIO_SUBMITTED' %}📤{% elif n.event == 'PORTFOLIO_APPROVED' %}✅{% elif n.event == 'REVISION_REQUIRED' %}✏️{% elif n.event == 'PORTFOLIO_REJECTED' %}❌{% elif n.event == 'PORTFOLIO_PUBLISHED' %}🌐{% elif n.event == 'PROFILE_CREATED' %}🎓{% else %}🔔{% endif %}
+          <div>
+            <b>{{ n.event|humanize }}</b>
+            <div class="muted">{{ n.message }}</div>
+            <div class="muted" style="font-size:12px">{{ n.created_at }}</div>
+          </div>
+        </div>
+        <form method="post" action="/notifications/">
+          {% csrf_token %}
+          <input type="hidden" name="delete_id" value="{{ n.id }}">
+          <button class="btn btn-sm btn-danger" type="submit">✕</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% endblock %}

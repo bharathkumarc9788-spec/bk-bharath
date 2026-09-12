@@ -1,0 +1,43 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Published Portfolios{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title">
+    <h3>Published Portfolios</h3>
+    <span class="muted">{{ portfolios|length }} live</span>
+  </div>
+  {% if not portfolios %}
+    <div class="empty"><div class="big">🌐</div>No published portfolios yet.<br>Generate → Approve → Publish to go live.</div>
+  {% else %}
+    {% for p in portfolios %}
+      <div class="list-item">
+        <div>
+          <h4>{{ p.student_name }}</h4>
+          <div class="muted">{{ p.register_number }} · {{ p.title }}</div>
+          <div class="muted mt">👁️ {{ p.views_count }} views{% if p.published_at %} · published {{ p.published_at|date:'M j, Y' }}{% endif %}</div>
+        </div>
+        <div class="row">
+          <span class="badge badge-green">🌐 Live</span>
+          <a class="btn btn-sm" href="/portfolio/public/{{ p.slug }}/" target="_blank">Open Public Page ↗</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% if views %}
+  <div class="card">
+    <h3 class="mb">Views — last 30 days</h3>
+    <div class="views-chart">
+      {% for d in views %}
+        <div class="views-col">
+          <div class="views-bar" style="height:{% widthratio d.views views_max 120 %}px" title="{{ d.date }}: {{ d.views }}"></div>
+          <div style="font-size:11px; color:var(--muted); margin-top:4px">{{ d.date|slice:'5:' }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

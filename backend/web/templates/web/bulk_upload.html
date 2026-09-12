@@ -1,0 +1,77 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Bulk Upload Students{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title">
+    <h3>Bulk Upload Students</h3>
+    <a class="btn btn-sm" href="/bulk-upload/template/">⬇️ Download CSV Template</a>
+  </div>
+  <p class="muted mb">Header row: register_number, name, email, phone, gender, department, admission_number. Upload .csv or .xlsx.</p>
+  <form method="post" action="/bulk-upload/" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="parse">
+    <div class="row">
+      <input type="file" name="file" accept=".csv,.xlsx" required>
+      <button class="btn btn-primary" type="submit">📂 Parse File</button>
+      <a class="btn btn-sm" href="/students">← Back to Students</a>
+    </div>
+  </form>
+</div>
+
+{% if preview and not report %}
+  <div class="card">
+    <div class="card-title">
+      <h3>Preview — {{ preview.total }} records ({{ preview.valid|length }} valid, {{ preview.invalid|length }} invalid)</h3>
+    </div>
+    {% if preview.valid %}
+      <div class="table-wrap mb">
+        <table>
+          <thead><tr><th>Register No</th><th>Name</th><th>Email</th><th>Department</th></tr></thead>
+          <tbody>
+            {% for r in preview.valid %}
+              <tr><td>{{ r.register_number }}</td><td>{{ r.name }}</td><td>{{ r.email|default:'—' }}</td><td>{{ r.department|default:'—' }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+    {% if preview.invalid %}
+      <div class="mb">
+        <b class="muted">Invalid rows:</b>
+        {% for r in preview.invalid %}
+          <span class="badge badge-red" style="margin:3px; padding:6px 10px">{{ r.reason|default:'invalid' }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <form method="post" action="/bulk-upload/">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="import">
+      <button class="btn btn-success" type="submit" {% if not preview.valid %}disabled{% endif %}>
+        ✔ Confirm Import ({{ preview.valid|length }})
+      </button>
+    </form>
+  </div>
+{% endif %}
+
+{% if report %}
+  <div class="card">
+    <h3>Import Report</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div><div class="value">{{ report.total }}</div><div class="label">Total Records</div></div></div>
+      <div class="stat-card"><div><div class="value" style="color:var(--success)">{{ report.valid }}</div><div class="label">Valid / Created</div></div></div>
+      <div class="stat-card"><div><div class="value" style="color:var(--danger)">{{ report.invalid }}</div><div class="label">Invalid / Skipped</div></div></div>
+    </div>
+    {% if report.failed %}
+      <div class="mb">
+        <b>Errors:</b>
+        {% for f in report.failed %}
+          <div class="muted" style="font-size:13px">• {{ f.reason }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <a class="btn btn-primary" href="/students">View Students</a>
+  </div>
+{% endif %}
+
+{% endblock %}

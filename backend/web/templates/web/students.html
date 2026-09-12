@@ -1,0 +1,66 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Students{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="row-between">
+    <h3>Students</h3>
+    <form method="get" action="/students/" class="search-bar" style="flex-wrap:wrap">
+      <input name="search" value="{{ search }}" placeholder="Search name / register / dept / skills…" style="min-width:260px">
+      <select name="department">
+        <option value="">All Departments</option>
+        {% for d in departments %}<option value="{{ d }}" {% if d == department %}selected{% endif %}>{{ d }}</option>{% endfor %}
+      </select>
+      <select name="status">
+        <option value="">All Status</option>
+        {% for s in 'DRAFT,SUBMITTED,UNDER_REVIEW,APPROVED,REVISION_REQUIRED,REJECTED,PUBLISHED'|split:',' %}
+          <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s|humanize }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filter</button>
+      {% if search or department or status %}<a class="btn btn-sm" href="/students/">Clear</a>{% endif %}
+      {% if is_hr %}<a class="btn btn-primary" href="/students/new/">+ Add Student</a>{% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  {% if students %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Student</th><th>Register No</th><th>Department</th><th>Email</th><th>Status</th><th>Completion</th></tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+            <tr>
+              <td>
+                <a href="/students/{{ s.obj.id }}/" style="display:flex; align-items:center; gap:8px">
+                  {% if s.obj.profile_photo %}<img class="avatar-sm" src="{{ s.obj.profile_photo.url }}" alt="{{ s.obj.name }}">
+                  {% else %}<span class="avatar-sm">{{ s.obj.name|initial }}</span>{% endif %}
+                  <b>{{ s.obj.name }}</b>
+                </a>
+              </td>
+              <td>{{ s.obj.register_number }}</td>
+              <td>{{ s.obj.department|default:'—' }}</td>
+              <td>{{ s.obj.email|default:'—' }}</td>
+              <td>{% if s.status %}<span class="badge {{ s.status|status_badge }}">{{ s.status|humanize }}</span>{% else %}—{% endif %}</td>
+              <td style="width:140px">
+                <div class="row">
+                  <div class="progress-bar" style="flex:1;width:80px"><div class="progress-fill" style="width:{{ s.completion }}%"></div></div>
+                  <span style="font-size:12.5px">{{ s.completion }}%</span>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="muted mt">Showing {{ students|length }} student(s)</div>
+  {% else %}
+    <div class="empty"><div class="big">🎓</div>No students found.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

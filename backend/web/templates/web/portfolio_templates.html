@@ -1,0 +1,26 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Portfolio Templates{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h3>Portfolio Templates</h3>
+  <p class="muted">Choose a template to shape your portfolio's look &amp; feel. Select one and it will be pre-loaded in the generator.</p>
+  <div class="grid-3">
+    {% for t in templates %}
+      <div class="card" style="padding:0; overflow:hidden">
+        <div style="background:{{ t.background }}; color:#fff; padding:40px; text-align:center">
+          <div style="font-size:30px">{{ t.icon }}</div>
+          <h3 style="margin-top:8px; color:#fff">{{ t.obj.name }}</h3>
+          {% if t.obj.is_default %}<span class="badge badge-green">Default</span>{% endif %}
+        </div>
+        <div style="padding:16px">
+          <p class="muted" style="font-size:13px">{{ t.obj.description|default:'Custom portfolio template.' }}</p>
+          <div class="muted" style="font-size:12px; margin-bottom:10px">Font: {{ t.obj.font }} · {{ t.obj.layout }}</div>
+          <a class="btn btn-primary btn-sm" href="/portfolio/generator/?template={{ t.obj.id }}">Use Template</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

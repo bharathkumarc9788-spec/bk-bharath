@@ -1,0 +1,153 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Portfolio Generator{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title"><h3>Portfolio Generator</h3></div>
+  <form method="post" action="/portfolio/generator/">
+    {% csrf_token %}
+    <div class="row">
+      <select name="student_id" style="flex:1; padding:10px">
+        <option value="">— Select Student —</option>
+        {% for s in students %}
+          <option value="{{ s.id }}" {% if s.id|stringformat:'s' == student_id %}selected{% endif %}>{{ s.name }} ({{ s.register_number }})</option>
+        {% endfor %}
+      </select>
+      <select name="template_id" style="flex:1; padding:10px">
+        <option value="">Default Template</option>
+        {% for t in templates %}
+          <option value="{{ t.id }}" {% if t.id|stringformat:'s' == template_id %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">⚙️ Generate Portfolio</button>
+    </div>
+  </form>
+</div>
+
+{% if portfolio %}
+  <div class="card">
+    <div class="card-title">
+      <div class="row">
+        <h3>{{ portfolio.student_name }}'s Portfolio</h3>
+        <span class="badge {{ portfolio.status|status_badge }}">{{ portfolio.status|humanize }}</span>
+      </div>
+      <div class="row">
+        <form method="post" action="/portfolio/{{ portfolio.id }}/submit/">
+          {% csrf_token %}
+          <button class="btn btn-primary btn-sm" type="submit">📤 Submit for Review</button>
+        </form>
+        {% if user.role == 'HR' or user.role == 'TEACHER' %}
+          <form method="post" action="/portfolio/{{ portfolio.id }}/publish/">
+            {% csrf_token %}
+            <button class="btn btn-success btn-sm" type="submit" {% if portfolio.status != 'APPROVED' %}disabled{% endif %}>🌐 Publish</button>
+          </form>
+        {% endif %}
+        <a class="btn btn-sm" href="/portfolio/{{ portfolio.id }}/qr/" {% if portfolio.status != 'PUBLISHED' %}disabled{% endif %}>🏷️ Download QR</a>
+      </div>
+    </div>
+    {% if missing %}
+      <div class="mt">
+        {% for m in missing %}<span class="badge badge-amber" style="margin:3px">Missing: {{ m }}</span>{% endfor %}
+      </div>
+    {% endif %}
+    {% if portfolio.status == 'PUBLISHED' and portfolio.slug %}
+      <div class="row mt">
+        <span class="badge badge-green">🔗 Public URL</span>
+        <a href="/portfolio/public/{{ portfolio.slug }}/" target="_blank" rel="noreferrer">/portfolio/public/{{ portfolio.slug }}/</a>
+      </div>
+    {% endif %}
+    <div class="mt" style="font-size:14px">
+      <b>Profile completion:</b> {{ portfolio.completion_percentage }}% &nbsp;·&nbsp;
+      <b>Template:</b> {{ portfolio.template.name|default:'Default' }} &nbsp;·&nbsp;
+      <b>Version:</b> {{ portfolio.versions.first.version_no|default:1 }}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Portfolio Preview</h3>
+    <div style="border:1px solid var(--border); border-radius:12px; overflow:hidden">
+      <div style="background:linear-gradient(135deg,#1e1b4b,#4f46e5); color:#fff; padding:30px; text-align:center">
+        {% with p=portfolio.data.personal %}
+          {% if p.profile_photo %}
+            <img src="{{ p.profile_photo }}" alt="" style="width:88px; height:88px; border-radius:50%; border:3px solid #fff; object-fit:cover">
+          {% else %}
+            <div style="width:88px; height:88px; border-radius:50%; background:rgba(255,255,255,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:34px">{{ p.name|first }}</div>
+          {% endif %}
+          <h2 style="margin-top:10px">{{ p.name }}</h2>
+          <div style="opacity:0.9">{{ p.department }} · {{ portfolio.data.education.0.degree }}</div>
+          <div class="contact-bar">
+            {% if p.email %}<a href="mailto:{{ p.email }}">✉️ {{ p.email }}</a>{% endif %}
+            {% if p.phone %}<span>📞 {{ p.phone }}</span>{% endif %}
+            {% if p.github_url %}<a href="{{ p.github_url }}" target="_blank" rel="noreferrer">GitHub</a>{% endif %}
+            {% if p.linkedin_url %}<a href="{{ p.linkedin_url }}" target="_blank" rel="noreferrer">LinkedIn</a>{% endif %}
+          </div>
+        {% endwith %}
+      </div>
+      <div style="padding:24px">
+        {% if portfolio.data.personal.professional_summary %}
+          <p class="muted">{{ portfolio.data.personal.professional_summary }}</p>
+        {% endif %}
+        {% with data=portfolio.data %}
+          <div style="margin-top:20px"><div class="section-title">Education</div>
+            {% for e in data.education %}
+              <div class="list-item" style="margin-bottom:8px">
+                <div><b>{{ e.degree }}</b><span class="muted"> · {{ e.college|default:'' }}</span></div>
+                <span class="muted">{% if e.cgpa %}CGPA {{ e.cgpa }}{% endif %}</span>
+              </div>
+            {% empty %}<div class="empty">No education</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Skills</div>
+            {% for s in data.skills %}<span class="skill-chip">{{ s.name }}</span>{% empty %}<div class="empty">No skills</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Projects</div>
+            {% for pr in data.projects %}
+              <div class="list-item" style="margin-bottom:8px">
+                <div>
+                  <b>{{ pr.name }}</b>
+                  <div class="muted">{{ pr.description|default:'' }}</div>
+                  {% if pr.technologies %}<div class="mt">{% for t in pr.technologies|split:',' %}<span class="skill-chip">{{ t }}</span>{% endfor %}</div>{% endif %}
+                </div>
+              </div>
+            {% empty %}<div class="empty">No projects</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Internships</div>
+            {% for i in data.internships %}
+              <div class="list-item" style="margin-bottom:8px"><b>{{ i.role_name }} @ {{ i.company }}</b></div>
+            {% empty %}<div class="empty">No internships</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Certifications</div>
+            {% for c in data.certifications %}
+              <div class="list-item" style="margin-bottom:8px"><b>{{ c.name }}</b><span class="muted"> · {{ c.issuing_organization }}</span></div>
+            {% empty %}<div class="empty">No certifications</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Achievements</div>
+            {% for a in data.achievements %}
+              <div class="list-item" style="margin-bottom:8px"><b>{{ a.title }}</b><span class="badge badge-violet">{{ a.level }}</span></div>
+            {% empty %}<div class="empty">No achievements</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Activities</div>
+            {% for a in data.activities %}
+              <div class="list-item" style="margin-bottom:8px"><b>{{ a.title }}</b><span class="muted"> · {{ a.activity_type_display }}</span></div>
+            {% empty %}<div class="empty">No activities</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">360° Feedback (Teacher)</div>
+            {% for f in data.feedback.teacher %}
+              <div class="list-item" style="margin-bottom:8px">
+                <div><b>{{ f.teacher_name }}</b><div class="muted">{{ f.academic_performance|default:f.communication|default:f.remarks }}</div></div>
+                <span class="badge badge-blue">Rating {{ f.overall_rating }}/5</span>
+              </div>
+            {% empty %}<div class="empty">No teacher feedback</div>{% endfor %}
+          </div>
+          <div style="margin-top:20px"><div class="section-title">Goals</div>
+            {% for g in data.goals %}
+              <div class="list-item" style="margin-bottom:8px"><b>{{ g.title }}</b><span class="badge badge-amber">{{ g.status|humanize }}</span></div>
+            {% empty %}<div class="empty">No goals</div>{% endfor %}
+          </div>
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

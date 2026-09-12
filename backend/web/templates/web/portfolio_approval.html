@@ -1,0 +1,122 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Approval Queue{% endblock %}
+{% block content %}
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">
+      <h3>Approval Queue</h3>
+      <form method="get" action="/portfolio/approval/">
+        <select name="status" style="padding:8px; border:1px solid var(--border); border-radius:8px">
+          <option value="">All Statuses</option>
+          {% for s in status_choices %}
+            <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s|humanize }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm" type="submit">Filter</button>
+      </form>
+    </div>
+    {% for p in portfolios %}
+      <a href="/portfolio/approval/?portfolio={{ p.id }}"
+         style="display:block; color:inherit; {% if detail and detail.id == p.id %}border-color:var(--primary);{% endif %}">
+        <div class="list-item" style="cursor:pointer; border-color:{% if detail.id == p.id %}var(--primary){% else %}var(--border){% endif %}; margin-bottom:8px">
+          <div>
+            <h4>{{ p.student_name }}</h4>
+            <div class="muted">{{ p.register_number }} · {{ p.completion_percentage }}% complete</div>
+          </div>
+          <span class="badge {{ p.status|status_badge }}">{{ p.status|humanize }}</span>
+        </div>
+      </a>
+    {% empty %}
+      <div class="empty">No portfolios in this queue</div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    {% if detail %}
+      <div class="row-between">
+        <div>
+          <h3>{{ detail.student_name }}'s Portfolio</h3>
+          <div class="muted">{{ detail.register_number }} · {{ detail.title }}</div>
+        </div>
+        <span class="badge {{ detail.status|status_badge }}">{{ detail.status|humanize }}</span>
+      </div>
+
+      <div class="row mt">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('review-modal-title').textContent='Approve Portfolio'; document.getElementById('review-action').value='approve'; document.getElementById('review-modal').style.display='flex'">✅ Approve</button>
+        <button class="btn btn-warning btn-sm" onclick="document.getElementById('review-modal-title').textContent='Request Revision'; document.getElementById('review-action').value='revision'; document.getElementById('review-modal').style.display='flex'">✏️ Request Changes</button>
+        <button class="btn btn-danger btn-sm" onclick="document.getElementById('review-modal-title').textContent='Reject Portfolio'; document.getElementById('review-action').value='reject'; document.getElementById('review-modal').style.display='flex'">❌ Reject</button>
+        <form method="post" action="/portfolio/{{ detail.id }}/review/" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="publish">
+          <button class="btn btn-success btn-sm" type="submit" {% if detail.status != 'APPROVED' %}disabled{% endif %}>🌐 Publish</button>
+        </form>
+      </div>
+
+      <div class="mt"><b>Completion:</b> {{ detail.completion_percentage }}%</div>
+
+      <div class="mt">
+        <h4 style="margin-bottom:8px">Approval History</h4>
+        {% for a in detail.approvals.all %}
+          <div class="list-item" style="display:block; padding:10px">
+            <div class="row-between">
+              <b>{{ a.status|humanize }}</b>
+              <span class="muted" style="font-size:12px">by {{ a.reviewer.display_name|default:'auto' }} · {{ a.created_at }}</span>
+            </div>
+            {% if a.comments %}<div class="muted mt">{{ a.comments }}</div>{% endif %}
+          </div>
+        {% empty %}
+          <div class="empty">No approval history yet</div>
+        {% endfor %}
+      </div>
+
+      <div class="mt">
+        <h4 style="margin-bottom:8px">Versions</h4>
+        {% for v in detail.versions.all %}
+          <div class="muted" style="font-size:13px; margin-bottom:6px">
+            v{{ v.version_no }} — {{ v.comment|default:'Generated' }} ({{ v.created_at }})
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt">
+        <b>Actions</b>
+        <div class="row mt">
+          <a class="btn btn-sm" href="/portfolio/generator/?student={{ detail.student }}" target="_blank">Open in Generator ↗</a>
+          {% if detail.status == 'PUBLISHED' %}
+            <a class="btn btn-sm" href="/portfolio/public/{{ detail.slug }}/" target="_blank">Open Public ↗</a>
+            <a class="btn btn-sm" href="/portfolio/{{ detail.id }}/qr/">QR ↓</a>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty"><div class="big">🕵️</div>Select a portfolio to review.</div>
+    {% endif %}
+  </div>
+</div>
+
+{% if detail %}
+<div class="modal-backdrop" id="review-modal" style="display:none">
+  <div class="modal">
+    <div class="card-title">
+      <h3 id="review-modal-title">Review</h3>
+      <button class="btn btn-sm" onclick="document.getElementById('review-modal').style.display='none'">✕</button>
+    </div>
+    <form method="post" action="/portfolio/{% if detail %}{{ detail.id }}{% endif %}/review/" id="review-form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="approve" id="review-action">
+      <div class="form-group mb">
+        <label>Comments / Reason</label>
+        <textarea name="comments" placeholder="Add a note for the student…"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" type="submit">Submit Review</button>
+        <button class="btn" type="button" onclick="document.getElementById('review-modal').style.display='none'">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,13 @@
+// Barrel — re-export all shared UI components.
+export { ConfirmDialog } from './ConfirmDialog'
+export { EmptyState } from './EmptyState'
+export { ErrorState } from './ErrorState'
+export { Loading, Skeleton } from './Loading'
+export { Modal } from './Modal'
+export { PortfolioCard } from './PortfolioCard'
+export { ProgressBar } from './ProgressBar'
+export { SearchBar } from './SearchBar'
+export { StatCard } from './StatCard'
+export { StatusBadge } from './StatusBadge'
+export { StudentTable } from './StudentTable'
+export { Toast } from './Toast'

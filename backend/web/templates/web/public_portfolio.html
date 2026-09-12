@@ -1,0 +1,162 @@
+{% load static %}
+{% load web_extras %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ data.title|default:'Portfolio' }}</title>
+  <link rel="stylesheet" href="{% static 'web/global.css' %}">
+</head>
+<body>
+
+{% if error %}
+<div class="login-page">
+  <div class="login-card" style="text-align:center">
+    <div style="font-size:42px">🔒</div>
+    <h1>Portfolio not available</h1>
+    <p class="sub">{{ error }}</p>
+  </div>
+</div>
+{% else %}
+
+<div class="public-shell">
+  <div class="public-hero">
+    {% with p=data.personal %}
+      {% if p.profile_photo %}
+        <img class="avatar-lg" src="{{ p.profile_photo }}" alt="{{ p.name }}">
+      {% else %}
+        <div class="avatar-lg" style="display:inline-flex; align-items:center; justify-content:center; font-size:40px">{{ p.name|first }}</div>
+      {% endif %}
+      <h1 style="margin-top:12px; font-size:30px">{{ data.title|default:p.name }}</h1>
+      <div style="opacity:0.85; font-size:17px">{{ p.department }}{% if data.education.0.degree %} · {{ data.education.0.degree }}{% endif %}</div>
+      {% if p.professional_summary %}
+        <p style="max-width:600px; margin:14px auto 0; opacity:0.9; font-size:14px">{{ p.professional_summary }}</p>
+      {% endif %}
+      <div class="contact-bar">
+        {% if p.email %}<a href="mailto:{{ p.email }}">✉️ {{ p.email }}</a>{% endif %}
+        {% if p.phone %}<span>📞 {{ p.phone }}</span>{% endif %}
+        {% if p.github_url %}<a href="{{ p.github_url }}" target="_blank" rel="noreferrer">🐙 GitHub</a>{% endif %}
+        {% if p.linkedin_url %}<a href="{{ p.linkedin_url }}" target="_blank" rel="noreferrer">💼 LinkedIn</a>{% endif %}
+      </div>
+      <div style="margin-top:14px; font-size:12.5px; opacity:0.7">👁️ {{ data.views_count }} views · Profile {{ data.completion.overall }}% complete</div>
+    {% endwith %}
+  </div>
+
+  <div class="public-body">
+    <div class="card">
+      <div class="section-title">Education</div>
+      {% for e in data.education %}
+        <div class="list-item">
+          <div>
+            <b>{{ e.degree|default:'Degree' }}</b>
+            <div class="muted">{{ e.college }}</div>
+            {% if e.history %}<div class="muted mt">{{ e.history }}</div>{% endif %}
+          </div>
+          <div style="text-align:right" class="muted">
+            {% if e.cgpa %}<div>CGPA {{ e.cgpa }}</div>{% endif %}
+            {% if e.percentage %}<div>{{ e.percentage }}%</div>{% endif %}
+            {% if e.start_year %}<div>{{ e.start_year }} – {{ e.end_year }}</div>{% endif %}
+          </div>
+        </div>
+      {% empty %}<div class="empty">No education</div>{% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">Skills</div>
+      {% for s in data.skills %}<span class="skill-chip">{{ s.name }}</span>{% empty %}<div class="empty">No skills</div>{% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">Projects</div>
+      {% for pr in data.projects %}
+        <div class="list-item">
+          <div>
+            <b>{{ pr.name }}</b>
+            {% if pr.student_role %}<span class="muted"> · Role: {{ pr.student_role }}</span>{% endif %}
+            <div class="muted mt">{{ pr.description|default:'' }}</div>
+            {% if pr.technologies %}<div class="mt">{% for t in pr.technologies|split:',' %}<span class="skill-chip">{{ t }}</span>{% endfor %}</div>{% endif %}
+          </div>
+          {% if pr.live_url %}<a href="{{ pr.live_url }}" target="_blank" rel="noreferrer">Live ↗</a>{% endif %}
+        </div>
+      {% empty %}<div class="empty">No projects</div>{% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">Internships</div>
+      {% for i in data.internships %}
+        <div class="list-item">
+          <div>
+            <b>{{ i.role_name|default:'Intern' }} @ {{ i.company }}</b>
+            <div class="muted mt">{{ i.description|default:i.responsibilities }}</div>
+          </div>
+        </div>
+      {% empty %}<div class="empty">No internships</div>{% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">Achievements</div>
+      {% for a in data.achievements %}
+        <div class="list-item">
+          <div>
+            <b>{{ a.title }}</b>
+            <div class="muted">{{ a.organization }}</div>
+          </div>
+          <span class="badge badge-violet">{{ a.level }}</span>
+        </div>
+      {% empty %}<div class="empty">No achievements</div>{% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">Activities</div>
+      {% for a in data.activities %}
+        <div class="list-item">
+          <div>
+            <b>{{ a.title }}</b>
+            <div class="muted">{{ a.activity_type_display }} · {{ a.organization }}{% if a.role %} · {{ a.role }}{% endif %}</div>
+          </div>
+        </div>
+      {% empty %}<div class="empty">No activities</div>{% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">360° Development</div>
+      {% for f in data.feedback_teacher %}
+        <div class="list-item">
+          <div>
+            <b>{{ f.teacher_name }}</b> <span class="muted">· Teacher</span>
+            <div class="muted mt">{{ f.academic_performance|default:f.communication|default:f.remarks }}</div>
+          </div>
+          <span class="badge badge-blue">Rating {{ f.overall_rating }}/5</span>
+        </div>
+      {% empty %}<div class="empty">No feedback yet</div>{% endfor %}
+      {% for s in data.completion.sections %}
+        {% if s.section != 'Feedback' and s.section != 'Goals' and s.percent < 70 %}
+          <span class="badge badge-amber" style="margin:4px">{{ s.section }}: {{ s.percent }}%</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="section-title">Goals</div>
+      {% for g in data.goals %}
+        <div class="list-item">
+          <div>
+            <b>{{ g.title }}</b>
+            <div class="muted">{{ g.description }}</div>
+          </div>
+          <span class="badge badge-amber">{{ g.status|humanize }}</span>
+        </div>
+      {% empty %}<div class="empty">No goals</div>{% endfor %}
+    </div>
+
+    {% if data.personal.address %}
+      <div class="muted" style="text-align:center; padding:20px 0 40px; font-size:13px">
+        📍 {{ data.personal.address }}{% if data.personal.city %}, {{ data.personal.city }}{% endif %}{% if data.personal.state %}, {{ data.personal.state }}{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+</body>
+</html>

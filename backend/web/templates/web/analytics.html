@@ -1,0 +1,107 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Analytics{% endblock %}
+{% block content %}
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="icon" style="background:#4f46e51a;color:#4f46e5">👁️</div>
+    <div><div class="value">{{ total_views_30_days }}</div><div class="label">Views (30 days)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="icon" style="background:#22c55e1a;color:#22c55e">🌐</div>
+    <div><div class="value">{{ published_by_department|length }}</div><div class="label">Published by dept</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="icon" style="background:#f59e0b1a;color:#f59e0b">🎓</div>
+    <div><div class="value">{{ avg_by_dept|length }}</div><div class="label">Departments tracked</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="icon" style="background:#0ea5e91a;color:#0ea5e9">📈</div>
+    <div><div class="value">{{ portfolio_status|length }}</div><div class="label">Status buckets</div></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Portfolio Views — last 30 days</h3>
+    {% if views_series %}
+      <div class="views-chart" style="height:280px">
+        {% for d in views_series %}
+          <div class="views-col">
+            <div class="views-bar" style="height:{% widthratio d.views views_max 220 %}px" title="{{ d.date }}: {{ d.views }}"></div>
+            <div style="font-size:10px; color:var(--muted); margin-top:4px">{{ d.date|slice:'5:' }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No views yet — share a public portfolio URL!</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Average Completion by Department</h3>
+    {% if avg_by_dept %}
+      {% for d in avg_by_dept %}
+        <div class="hbar-row">
+          <div class="hbar-label">{{ d.department }}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio d.avg_completion dept_max 100 %}%"></div></div>
+          <div class="hbar-value">{{ d.avg_completion }}%</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">No data</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Portfolio Status</h3>
+    {% if portfolio_status %}
+      {% for s in portfolio_status %}
+        <div class="hbar-row">
+          <div class="hbar-label"><span class="badge {{ s.status|status_badge }}">{{ s.status|humanize }}</span></div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio s.count 1 100 %}%"></div></div>
+          <div class="hbar-value">{{ s.count }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">No portfolios</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Published Portfolios by Department</h3>
+    {% if published_by_department %}
+      {% for d in published_by_department %}
+        <div class="hbar-row">
+          <div class="hbar-label">{{ d.department }}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:{% widthratio d.count pub_max 100 %}%"></div></div>
+          <div class="hbar-value">{{ d.count }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">Nothing published yet</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3>Completion Bins</h3>
+  <div class="chart-bars">
+    {% for b in completion_bins %}
+      <div class="chart-bar-col">
+        {% if b.value %}
+          <div class="chart-bar-fill" style="height:{% widthratio b.value bins_max 100 %}%"></div>
+        {% else %}
+          <div class="chart-bar-empty"></div>
+        {% endif %}
+        <div class="chart-bar-label"><b>{{ b.value }}</b></div>
+        <div class="chart-bar-label">{{ b.label }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

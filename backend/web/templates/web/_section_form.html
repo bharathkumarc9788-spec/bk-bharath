@@ -1,0 +1,35 @@
+{% if can_edit and show_form %}
+<form method="post" action="/students/{{ student.id }}/{{ section }}/add/"
+      style="border:1px dashed var(--border); border-radius:12px; padding:16px; margin-bottom:14px; background:#f8fafc">
+  {% csrf_token %}
+  <div class="form-grid">
+    {% for field in schema %}
+      <div class="form-group">
+        <label>{{ field.label }}</label>
+        {% if field.type == 'textarea' %}
+          <textarea name="{{ field.key }}"></textarea>
+        {% elif field.type == 'select' %}
+          <select name="{{ field.key }}">
+            <option value="">— Select —</option>
+            {% for o in field.options %}
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            {% endfor %}
+          </select>
+        {% elif field.type == 'number' %}
+          <input type="number" name="{{ field.key }}" step="{{ field.step|default:'1' }}">
+        {% elif field.type == 'date' %}
+          <input type="date" name="{{ field.key }}">
+        {% elif field.type == 'url' %}
+          <input type="url" name="{{ field.key }}">
+        {% else %}
+          <input type="text" name="{{ field.key }}">
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="row mt">
+    <button class="btn btn-primary btn-sm" type="submit">Add</button>
+    <a class="btn btn-sm" href="?tab={{ section }}">Cancel</a>
+  </div>
+</form>
+{% endif %}

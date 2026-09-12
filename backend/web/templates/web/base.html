@@ -1,0 +1,90 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Student Portfolio Automation{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'web/global.css' %}">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="logo">🎒</span>
+      <span>PortfolioSystem</span>
+    </div>
+    <nav>
+      <a class="{% if request.path == '/dashboard/' or request.path == '/' %}active{% endif %}" href="/dashboard">
+        <span>📊</span>Dashboard
+      </a>
+      <a class="{% if '/students' in request.path %}active{% endif %}" href="/students">
+        <span>🎓</span>Students
+      </a>
+      {% if user.role == 'HR' %}
+      <a class="{% if request.path == '/students/new/' %}active{% endif %}" href="/students/new">
+        <span>➕</span>Add Student
+      </a>
+      <a class="{% if '/bulk-upload' in request.path %}active{% endif %}" href="/bulk-upload">
+        <span>📤</span>Bulk Upload
+      </a>
+      {% endif %}
+      <a class="{% if '/portfolio/generator' in request.path %}active{% endif %}" href="/portfolio/generator">
+        <span>⚙️</span>Portfolio Generator
+      </a>
+      <a class="{% if '/portfolio/templates' in request.path %}active{% endif %}" href="/portfolio/templates">
+        <span>🎨</span>Templates
+      </a>
+      {% if user.role == 'HR' or user.role == 'TEACHER' %}
+      <a class="{% if '/portfolio/approval' in request.path %}active{% endif %}" href="/portfolio/approval">
+        <span>✅</span>Approvals
+      </a>
+      <a class="{% if '/portfolio/published' in request.path %}active{% endif %}" href="/portfolio/published">
+        <span>🌐</span>Published
+      </a>
+      <a class="{% if '/analytics' in request.path %}active{% endif %}" href="/analytics">
+        <span>📈</span>Analytics
+      </a>
+      {% endif %}
+      <a class="{% if '/notifications' in request.path %}active{% endif %}" href="/notifications">
+        <span>🔔</span>Notifications
+      </a>
+    </nav>
+    <div class="sidebar-footer">Student Portfolio Automation System v1.0</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+        {% block page_subtitle %}{% endblock %}
+      </div>
+      <div class="topbar-right">
+        <a href="/notifications" class="btn btn-sm">🔔</a>
+        <div class="topbar-user">
+          <span class="avatar">{% if user.first_name|first or user.last_name|first %}{{ user.first_name|first }}{{ user.last_name|first }}{% else %}U{% endif %}</span>
+          <div>
+            <div>{{ user.get_full_name|default:user.username }}</div>
+            <div class="muted" style="font-size:12px">{{ user.get_role_display }}</div>
+          </div>
+        </div>
+        <form method="post" action="/logout/">
+          {% csrf_token %}
+          <button class="btn btn-sm" type="submit">Logout</button>
+        </form>
+      </div>
+    </header>
+    <main class="content">
+      {% if messages %}
+        <div class="toast-wrap">
+          {% for m in messages %}
+            <div class="toast {% if m.tags %}{{ m.tags }}{% endif %}">{{ m }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+</body>
+</html>
