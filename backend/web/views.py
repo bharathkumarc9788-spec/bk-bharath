@@ -150,10 +150,53 @@ def clean_section_data(section, raw):
 # --------------------------------------------------------------------------
 
 
+# Demo credentials used by the login page role selector (professional demo UX).
+DEMO_ACCOUNTS = {
+    'SUPER_ADMIN': ('superadmin', 'superadmin123'),
+    'HR': ('admin', 'admin123'),
+    'TEACHER': ('teacher', 'teacher123'),
+    'PARENT': ('parent', 'parent123'),
+}
+DEMO_ROLE_ORDER = ['SUPER_ADMIN', 'HR', 'STUDENT', 'TEACHER', 'PARENT']
+DEMO_ROLE_LABELS = {
+    'SUPER_ADMIN': 'Super Admin', 'HR': 'HR / Admin', 'STUDENT': 'Student',
+    'TEACHER': 'Teacher', 'PARENT': 'Parent',
+}
+
+
+def _demo_student_credentials():
+    """Pick the first seeded student so the Student role has a working demo login."""
+    student = Student.objects.filter(user__isnull=False).first()
+    if student and student.user:
+        return (student.user.username, 'student123')
+    return ('student@college.edu', 'student123')
+
+
+def _login_credentials(role):
+    """Resolve demo username/password for a requested role."""
+    if role == 'STUDENT':
+        return _demo_student_credentials()
+    return DEMO_ACCOUNTS.get(role, (None, None))
+
+
 def index_redirect(request):
+    """Professional landing page for visitors; dashboard for signed-in users."""
     if request.user.is_authenticated:
         return redirect('web:dashboard')
-    return redirect('web:login')
+    published_qs = Portfolio.objects.filter(status=Portfolio.Status.PUBLISHED,
+                                            slug__isnull=False).exclude(slug='')
+    return render(request, 'web/landing.html', {
+        'landing_stats': {
+            'students': Student.objects.count(),
+            'portfolios': Portfolio.objects.count(),
+            'published': published_qs.count(),
+            'views': sum(p.views_count for p in published_qs),
+        },
+        'published_samples': [
+            {'slug': p.slug, 'name': p.student.name, 'dept': p.student.department,
+             'views': p.views_count} for p in published_qs[:3]
+        ],
+    })
 
 
 def login_view(request):
@@ -171,9 +214,27 @@ def login_view(request):
         messages.error(request, 'Invalid credentials. Try again.')
         return render(request, 'web/login.html', {'username': username})
 
+    # Professional role selector: /login/?role=STUDENT prefills demo credentials.
+    requested_role = request.GET.get('role', '')
+    username = request.GET.get('username', '')
+    password = request.GET.get('password', '')
+    if requested_role:
+        credentials = _login_credentials(requested_role)
+        if credentials and credentials[0] and not username:
+            username, password = credentials
+
     return render(request, 'web/login.html', {
-        'username': request.GET.get('username', 'admin'),
-        'password': request.GET.get('password', ''),
+        'username': username or 'admin',
+        'password': password,
+        'active_role': requested_role,
+        'demo_role_options': [
+            {'key': 'SUPER_ADMIN', 'label': 'Super Admin', 'tagline': 'Full system'},
+            {'key': 'HR', 'label': 'HR / Admin', 'tagline': 'Management'},
+            {'key': 'STUDENT', 'label': 'Student', 'tagline': 'My 360°'},
+            {'key': 'TEACHER', 'label': 'Teacher', 'tagline': 'Teaching'},
+            {'key': 'PARENT', 'label': 'Parent', 'tagline': 'Monitoring'},
+        ],
+        'demo_student_username': _demo_student_credentials()[0],
     })
 
 

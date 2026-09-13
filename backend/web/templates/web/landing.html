@@ -1,0 +1,130 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio360 — Student Portfolio Automation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎒</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'web/global.css' %}">
+</head>
+<body>
+
+<header class="land-nav">
+  <a class="land-brand" href="/">
+    <span class="land-brand-icon">🎒</span>
+    <span><b>Portfolio360</b><small>Student Portfolio Automation</small></span>
+  </a>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#samples">Sample Portfolios</a>
+  </nav>
+  <a class="btn btn-primary" href="/login/">Sign In →</a>
+</header>
+
+<section class="land-hero">
+  <div class="land-hero-inner">
+    <div class="kicker">RBAC · 360° Portfolios · QR · Analytics</div>
+    <h1>Turn every student into a<br><span class="grad-text">shareable professional portfolio</span></h1>
+    <p class="land-hero-sub">
+      Portfolio360 automatically builds structured, recruiter-ready digital portfolios from the
+      student's academic, skill, project, internship and 360° development data — with an
+      approval workflow, public URLs and QR codes.
+    </p>
+    <div class="land-cta">
+      <a class="btn btn-primary" href="/login/">Get Started — Sign In</a>
+      <a class="btn" href="#samples">View Sample Portfolios</a>
+    </div>
+    <div class="land-stats">
+      <div><b>{{ landing_stats.students }}</b><span>Students</span></div>
+      <div><b>{{ landing_stats.portfolios }}</b><span>Portfolios</span></div>
+      <div><b>{{ landing_stats.published }}</b><span>Published</span></div>
+      <div><b>{{ landing_stats.views }}+</b><span>Public Views</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="land-body">
+  <div class="land-head" id="features">
+    <div class="kicker">Platform</div>
+    <h2>Everything a placement team needs</h2>
+    <p>From capturing 360° student data to publishing a live, QR-shareable portfolio.</p>
+  </div>
+
+  <div class="land-features">
+    <div class="land-feature">
+      <div class="land-feature-icon group-badge-dark">🧠</div>
+      <h3>360° Student Profile</h3>
+      <p>Academics, skills, projects, internships, certifications, achievements, activities, teacher &amp; parent feedback, goals.</p>
+    </div>
+    <div class="land-feature">
+      <div class="land-feature-icon">🎨</div>
+      <h3>Premium Templates</h3>
+      <p>Professional, Modern, Developer, Creative and Minimal layouts — generated in one click.</p>
+    </div>
+    <div class="land-feature">
+      <div class="land-feature-icon group-badge-rose">🛡️</div>
+      <h3>Role-Based Access</h3>
+      <p>Super Admin, HR, Teacher, Student and Parent each see exactly the modules they are allowed.</p>
+    </div>
+    <div class="land-feature">
+      <div class="land-feature-icon">✅</div>
+      <h3>Approval Workflow</h3>
+      <p>Submit → Under Review → Approve / Reject / Revision — with full history and notifications.</p>
+    </div>
+    <div class="land-feature">
+      <div class="land-feature-icon">🌐</div>
+      <h3>Public URL + QR</h3>
+      <p>Every approved portfolio gets a public link and a downloadable QR code for recruiters.</p>
+    </div>
+    <div class="land-feature">
+      <div class="land-feature-icon">📈</div>
+      <h3>Analytics</h3>
+      <p>Portfolio views, completion rates, department analysis and a student-support radar.</p>
+    </div>
+  </div>
+
+  <div class="land-head" id="how">
+    <div class="kicker">Workflow</div>
+    <h2>From data to a live portfolio</h2>
+  </div>
+  <div class="land-steps">
+    <div class="land-step"><span>1</span><h3>Capture</h3><p>HR uploads students &amp; students maintain their 360° profile.</p></div>
+    <div class="land-step"><span>2</span><h3>Generate</h3><p>Pick a template and the system builds the portfolio automatically.</p></div>
+    <div class="land-step"><span>3</span><h3>Approve</h3><p>Teachers / HR review and approve or request changes.</p></div>
+    <div class="land-step"><span>4</span><h3>Publish</h3><p>One click publishes it — with a public URL and QR code.</p></div>
+  </div>
+
+  <div class="land-head" id="samples">
+    <div class="kicker">Live Examples</div>
+    <h2>Public portfolios — no login needed</h2>
+  </div>
+  <div class="land-samples">
+    {% for p in published_samples %}
+      <a class="land-sample" href="/portfolio/public/{{ p.slug }}/" target="_blank">
+        <span class="badge badge-green">● Live</span>
+        <h3>{{ p.name }}</h3>
+        <p>{{ p.dept }}</p>
+        <small>👁️ {{ p.views }} views — Open ↗</small>
+      </a>
+    {% empty %}
+      <div class="empty">No published portfolios yet.</div>
+    {% endfor %}
+  </div>
+
+  <div class="land-cta land-cta-last">
+    <h2>Ready to automate student portfolios?</h2>
+    <a class="btn btn-primary" href="/login/">Sign in to your role →</a>
+  </div>
+</section>
+
+<footer class="land-footer">
+  <b>Portfolio360</b> — Student Portfolio Automation System · Django + Python · RBAC · QR sharing ·
+  © <script>document.write(new Date().getFullYear())</script> Intern Project
+</footer>
+</body>
+</html>
