@@ -622,7 +622,7 @@ a.tr-hover:hover td { background: #f6f7ff; }
   display: grid; align-items: center; justify-content: center;
   padding: 24px;
   position: relative; overflow: hidden;
-  background: linear-gradient(160deg, rgba(15, 18, 48, 0.60), rgba(13, 16, 48, 0.38));
+  background: linear-gradient(160deg, rgba(15, 18, 48, 0.32), rgba(13, 16, 48, 0.18));
 }
 /* Background image + slow premium zoom (ken-burns) */
 .login-page::before {
@@ -639,9 +639,9 @@ a.tr-hover:hover td { background: #f6f7ff; }
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(900px 500px at 18% 0%, rgba(129, 140, 248, 0.22), transparent 60%),
-    radial-gradient(800px 480px at 85% 100%, rgba(217, 70, 239, 0.16), transparent 55%),
-    linear-gradient(160deg, rgba(13, 16, 48, 0.5) 0%, transparent 45%, rgba(13, 16, 48, 0.42) 100%);
+    radial-gradient(900px 500px at 18% 0%, rgba(129, 140, 248, 0.20), transparent 60%),
+    radial-gradient(800px 480px at 85% 100%, rgba(217, 70, 239, 0.14), transparent 55%),
+    linear-gradient(160deg, rgba(13, 16, 48, 0.30) 0%, transparent 50%, rgba(13, 16, 48, 0.24) 100%);
   pointer-events: none;
 }
 @keyframes loginZoom {
@@ -652,22 +652,22 @@ a.tr-hover:hover td { background: #f6f7ff; }
 /* frosted glass card */
 .login-card {
   width: 100%; max-width: 440px;
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(26px) saturate(1.6);
+  -webkit-backdrop-filter: blur(26px) saturate(1.6);
   border-radius: 26px; padding: 38px 34px;
   box-shadow:
     0 34px 90px rgba(13, 16, 48, 0.55),
     0 0 40px rgba(139, 92, 246, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   position: relative; z-index: 2;
   animation: riseIn 0.6s var(--ease);
 }
 .login-card::before {
   content: '';
   position: absolute; inset: 0; border-radius: 26px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.25), transparent 40%, rgba(139,92,246,0.08));
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 40%, rgba(139,92,246,0.10));
   pointer-events: none;
 }
 .login-brand {
