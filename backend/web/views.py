@@ -183,9 +183,11 @@ def index_redirect(request):
     """Professional landing page for visitors; dashboard for signed-in users."""
     if request.user.is_authenticated:
         return redirect('web:dashboard')
+    from datetime import datetime
     published_qs = Portfolio.objects.filter(status=Portfolio.Status.PUBLISHED,
                                             slug__isnull=False).exclude(slug='')
     return render(request, 'web/landing.html', {
+        'year': datetime.now().year,
         'landing_stats': {
             'students': Student.objects.count(),
             'portfolios': Portfolio.objects.count(),
@@ -425,6 +427,7 @@ def _dashboard_parent(request, user, base):
     })
 
 
+@login_required
 def students_list(request):
     qs = visible_students(request.user)
 
