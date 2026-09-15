@@ -622,37 +622,31 @@ a.tr-hover:hover td { background: #f6f7ff; }
   display: grid; align-items: center; justify-content: center;
   padding: 24px;
   position: relative; overflow: hidden;
-  background:
-    linear-gradient(115deg, #0d1030 0%, #26206b 30%, #7c3aed 60%, #d946ef 80%, #0d1030 100%);
-  background-size: 280% 280%;
-  animation: loginAurora 16s ease-in-out infinite;
+  background: linear-gradient(160deg, rgba(15, 18, 48, 0.60), rgba(13, 16, 48, 0.38));
 }
-@keyframes loginAurora {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-/* floating glow blobs over the animated gradient */
-.login-page::before, .login-page::after {
-  content: '';
-  position: absolute; border-radius: 50%;
-  filter: blur(70px); opacity: 0.5;
-  animation: blobFloat 16s ease-in-out infinite alternate;
-}
+/* Background image + slow premium zoom (ken-burns) */
 .login-page::before {
-  width: 560px; height: 560px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.8), transparent 65%);
-  top: -160px; left: -140px;
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url('login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  transform-origin: center;
+  animation: loginZoom 26s ease-in-out infinite alternate;
 }
+/* soft indigo vignette so the glass card stays readable */
 .login-page::after {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(217, 70, 239, 0.7), transparent 65%);
-  bottom: -200px; right: -160px;
-  animation-delay: -8s;
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(900px 500px at 18% 0%, rgba(129, 140, 248, 0.22), transparent 60%),
+    radial-gradient(800px 480px at 85% 100%, rgba(217, 70, 239, 0.16), transparent 55%),
+    linear-gradient(160deg, rgba(13, 16, 48, 0.5) 0%, transparent 45%, rgba(13, 16, 48, 0.42) 100%);
+  pointer-events: none;
 }
-@keyframes blobFloat {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(46px, 34px) scale(1.15); }
+@keyframes loginZoom {
+  from { transform: scale(1) translateY(0); }
+  to { transform: scale(1.08) translateY(-10px); }
 }
 
 /* frosted glass card */
