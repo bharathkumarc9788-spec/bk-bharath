@@ -225,17 +225,10 @@ def login_view(request):
         if credentials and credentials[0] and not username:
             username, password = credentials
 
-    published_qs = Portfolio.objects.filter(status=Portfolio.Status.PUBLISHED,
-                                            slug__isnull=False).exclude(slug='')
     return render(request, 'web/login.html', {
         'username': username or 'admin',
         'password': password,
         'active_role': requested_role,
-        'landing_stats': {
-            'students': Student.objects.count(),
-            'portfolios': Portfolio.objects.count(),
-            'published': published_qs.count(),
-        },
         'demo_role_options': [
             {'key': 'SUPER_ADMIN', 'label': 'Super Admin', 'tagline': 'Full system'},
             {'key': 'HR', 'label': 'HR / Admin', 'tagline': 'Management'},
