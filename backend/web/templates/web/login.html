@@ -12,57 +12,113 @@
   <link rel="stylesheet" href="{% static 'web/global.css' %}">
 </head>
 <body>
-<div class="login-page">
-  <div class="login-card login-card-wide">
-    <div class="login-brand">🎒</div>
-    <h1>Welcome to Portfolio360</h1>
-    <p class="sub">Select your role to sign in with the demo account, or enter your own credentials.</p>
+<div class="login-page login-split">
 
-    {% if messages %}
-      {% for m in messages %}
-        <div class="badge badge-red mb" style="padding:9px 14px; display:flex">{{ m }}</div>
-      {% endfor %}
-    {% endif %}
+  <!-- ── Left: brand showcase ─────────────────────────────── -->
+  <div class="login-showcase">
+    <div class="login-showcase-inner">
+      <a class="land-brand" href="/">
+        <span class="land-brand-icon">🎒</span>
+        <span><b>Portfolio360</b><small>Student Portfolio Automation</small></span>
+      </a>
 
-    <div class="role-tabs">
-      {% for opt in demo_role_options %}
-        <a class="role-tab {% if opt.key == active_role %}active{% endif %}"
-           href="/login/?role={{ opt.key }}">
-          <span class="role-tab-icon">
-            {% if opt.key == 'SUPER_ADMIN' %}🛡️{% elif opt.key == 'HR' %}👩‍💼
-            {% elif opt.key == 'STUDENT' %}🎓{% elif opt.key == 'TEACHER' %}👨‍🏫
-            {% else %}👨‍👩‍👧{% endif %}
-          </span>
-          <span>{{ opt.label }}</span>
-          <small>{{ opt.tagline }}</small>
-        </a>
-      {% endfor %}
-    </div>
-
-    <form method="post" action="/login/">
-      {% csrf_token %}
-      <div class="form-group mb">
-        <label>Username</label>
-        <input name="username" value="{{ username }}" placeholder="your username or email" required autofocus>
+      <div class="showcase-copy">
+        <span class="kicker login-kicker">360° Portfolios · QR · RBAC</span>
+        <h1>Every student's journey,<br><span class="grad-text">one brilliant portfolio.</span></h1>
+        <p class="showcase-sub">
+          Capture academics, skills, projects, internships and 360° development —
+          then publish a recruiter-ready portfolio with a single click.
+        </p>
       </div>
-      <div class="form-group mb">
-        <label>Password</label>
-        <input type="password" name="password" value="{{ password }}" placeholder="••••••••" required>
+
+      <div class="showcase-features">
+        <div class="sc-feature"><span>⚙️</span><b>Auto-generate</b><small>Template-based portfolios</small></div>
+        <div class="sc-feature"><span>✅</span><b>Approvals</b><small>Teacher → HR workflow</small></div>
+        <div class="sc-feature"><span>🌐</span><b>Share</b><small>Public URL + QR code</small></div>
       </div>
-      <button class="btn btn-primary" type="submit">Sign In <span style="margin-left:2px">→</span></button>
-    </form>
 
-    <div class="login-role-hint">
-      <span>Demo accounts you can use:</span>
-      <code>superadmin / superadmin123</code>
-      <code>admin / admin123</code>
-      <code>teacher / teacher123</code>
-      <code>parent / parent123</code>
-      <code>{{ username }}{% if active_role == 'STUDENT' %} (any student email) / student123{% endif %}</code>
+      <!-- small live portfolio preview card (pure CSS) -->
+      <div class="login-mock">
+        <div class="mock-head">
+          <span class="avatar-lg mock-avatar">A</span>
+          <div>
+            <b class="mock-name">Ananya Gupta</b>
+            <small class="mock-role">Computer Science · B.E.</small>
+          </div>
+          <span class="badge badge-green">● Live</span>
+        </div>
+        <div class="mock-body">
+          <span class="skill-chip">Python</span>
+          <span class="skill-chip">React</span>
+          <span class="skill-chip">AWS</span>
+          <span class="skill-chip">SQL</span>
+        </div>
+        <div class="mock-foot">
+          <div class="progress-bar"><div class="progress-fill" style="width:92%"></div></div>
+          <small>92% profile · 1.2k views</small>
+        </div>
+      </div>
+
+      <div class="showcase-stats">
+        <div><b>{{ landing_stats.students }}</b><span>Students</span></div>
+        <div><b>{{ landing_stats.portfolios }}</b><span>Portfolios</span></div>
+        <div><b>{{ landing_stats.published }}</b><span>Published</span></div>
+      </div>
     </div>
+  </div>
 
-    <div class="login-foot">
-      🔒 Secure role-based access · 360° portfolios · QR sharing
+  <!-- ── Right: sign-in card ──────────────────────────────── -->
+  <div class="login-panel">
+    <div class="login-card">
+      <div class="login-brand">🎒</div>
+      <h1>Welcome back</h1>
+      <p class="sub">Pick your role, or sign in with your own account.</p>
+
+      {% if messages %}
+        {% for m in messages %}
+          <div class="badge badge-red mb" style="padding:9px 14px; display:flex">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="role-tabs">
+        {% for opt in demo_role_options %}
+          <a class="role-tab {% if opt.key == active_role %}active{% endif %}"
+             href="/login/?role={{ opt.key }}" title="Sign in as {{ opt.label }}">
+            <span class="role-tab-icon">
+              {% if opt.key == 'SUPER_ADMIN' %}🛡️{% elif opt.key == 'HR' %}👩‍💼
+              {% elif opt.key == 'STUDENT' %}🎓{% elif opt.key == 'TEACHER' %}👨‍🏫
+              {% else %}👨‍👩‍👧{% endif %}
+            </span>
+            <span>{{ opt.label }}</span>
+          </a>
+        {% endfor %}
+      </div>
+
+      <form method="post" action="/login/">
+        {% csrf_token %}
+        <div class="form-group mb">
+          <label>Username</label>
+          <div class="input-with-icon">👤 <input name="username" value="{{ username }}" placeholder="username or email" required autofocus></div>
+        </div>
+        <div class="form-group mb">
+          <label>Password</label>
+          <div class="input-with-icon">🔒 <input type="password" name="password" value="{{ password }}" placeholder="••••••••" required></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Sign In <span style="margin-left:2px">→</span></button>
+      </form>
+
+      <div class="login-role-hint">
+        <span>Quick demo accounts —</span>
+        <code>superadmin / superadmin123</code>
+        <code>admin / admin123</code>
+        <code>teacher / teacher123</code>
+        <code>parent / parent123</code>
+        {% if demo_student_username %}<code>{{ demo_student_username }} / student123</code>{% endif %}
+      </div>
+
+      <div class="login-foot">
+        🔒 Secure · Role-based access · 360° portfolios · QR sharing
+      </div>
     </div>
   </div>
 </div>
