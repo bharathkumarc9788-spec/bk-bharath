@@ -51,13 +51,18 @@ def main():
 
     hr = Client()
     hr.login(username='admin', password='admin123')
+    sample_student = Student.objects.first()
+    if not sample_student:
+        print('SKIP: no students — run `python manage.py seed` first')
+        return 0
+    SID = f'/students/{sample_student.id}'
     total_errors += probe(hr, 'HR', [
-        '/dashboard/', '/students/', '/students/new/', '/students/1/',
-        '/students/1/?tab=education', '/students/1/?tab=skills', '/students/1/?tab=projects',
-        '/students/1/?tab=internships', '/students/1/?tab=certifications',
-        '/students/1/?tab=achievements', '/students/1/?tab=activities',
-        '/students/1/?tab=feedback', '/students/1/?tab=goals',
-        '/students/1/?tab=completion', '/students/1/?tab=personal',
+        '/dashboard/', '/students/', '/students/new/', SID,
+        f'{SID}/?tab=education', f'{SID}/?tab=skills', f'{SID}/?tab=projects',
+        f'{SID}/?tab=internships', f'{SID}/?tab=certifications',
+        f'{SID}/?tab=achievements', f'{SID}/?tab=activities',
+        f'{SID}/?tab=feedback', f'{SID}/?tab=goals',
+        f'{SID}/?tab=completion', f'{SID}/?tab=personal',
         '/bulk-upload/', '/bulk-upload/template/',
         '/portfolio/generator/', '/portfolio/templates/', '/portfolio/approval/',
         '/portfolio/published/', '/analytics/', '/notifications/',
@@ -144,6 +149,25 @@ def main():
         blocked = sc.get('/analytics/').status_code
         assert blocked in (302, 403), f'student should be blocked from analytics, got {blocked}'
         print('RBAC STUDENT: dashboard OK, analytics blocked')
+
+    # ---- Demo data manager: page renders for HR; students blocked; Edit/Delete buttons.
+    dc = Client()
+    dc.login(username='admin', password='admin123')
+    page = dc.get('/demo-data/')
+    assert page.status_code == 200, 'demo-data page failed'
+    assert 'Clear All Demo Data' in page.content.decode(), 'clear button missing'
+    assert 'Reseed Demo Data' in page.content.decode(), 'reseed button missing'
+
+    students_page = dc.get('/students/').content.decode()
+    edit_count = students_page.count('Edit')
+    delete_count = students_page.count('/delete/')
+    assert edit_count >= 1 and delete_count >= 1, f'edit/delete buttons missing ({edit_count}/{delete_count})'
+    print(f'RBAC SUPER_ADMIN/DEMO: demo-data OK, {edit_count} Edit + {delete_count} Delete buttons')
+
+    if student_role:
+        blocked = sc.get('/demo-data/').status_code
+        assert blocked in (302, 403), f'student should be blocked from demo-data, got {blocked}'
+        print('RBAC STUDENT: demo-data blocked')
 
     print('SMOKE TEST', 'PASSED' if not total_errors else f'FAILED ({len(total_errors)} errors)')
     return 1 if total_errors else 0

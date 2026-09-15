@@ -30,7 +30,7 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Student</th><th>Register No</th><th>Department</th><th>Email</th><th>Status</th><th>Completion</th></tr>
+          <tr><th>Student</th><th>Register No</th><th>Department</th><th>Email</th><th>Status</th><th>Completion</th>{% if is_hr %}<th>Actions</th>{% endif %}</tr>
         </thead>
         <tbody>
           {% for s in students %}
@@ -52,6 +52,18 @@
                   <span style="font-size:12.5px">{{ s.completion }}%</span>
                 </div>
               </td>
+              {% if is_hr %}
+              <td>
+                <div class="row">
+                  <a class="btn btn-sm" href="/students/{{ s.obj.id }}/?tab=personal" title="Edit profile">✏️ Edit</a>
+                  <form method="post" action="/students/{{ s.obj.id }}/delete/"
+                        onsubmit="return confirm('Delete student {{ s.obj.name }} and all their data?')">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-danger" type="submit" title="Delete">🗑</button>
+                  </form>
+                </div>
+              </td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody>

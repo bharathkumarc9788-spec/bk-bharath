@@ -38,21 +38,25 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Linked {count} student login accounts (password: student123)'))
 
     def seed_users(self):
+        def _ensure(user, password):
+            if not user.check_password(password):
+                user.set_password(password)
+            user.save()
+
         # Super Admin — full system control
         super_admin, _ = User.objects.get_or_create(
             username='superadmin',
             defaults={'role': 'SUPER_ADMIN', 'email': 'superadmin@college.edu',
                       'first_name': 'Super', 'last_name': 'Admin', 'is_staff': True,
                       'is_superuser': True})
-        super_admin.set_password('superadmin123')
-        super_admin.save()
+        _ensure(super_admin, 'superadmin123')
 
         # HR / Admin — management
         hr, _ = User.objects.get_or_create(
             username='admin',
             defaults={'role': 'HR', 'email': 'hr@college.edu',
                       'first_name': 'HR', 'last_name': 'Admin'})
-        hr.set_password('admin123')
+        _ensure(hr, 'admin123')
         hr.role = 'HR'
         hr.is_superuser = False
         hr.is_staff = False
@@ -62,15 +66,14 @@ class Command(BaseCommand):
             username='teacher',
             defaults={'role': 'TEACHER', 'email': 'teacher@college.edu',
                       'first_name': 'R.', 'last_name': 'Ramesh'})
-        teacher_user.set_password('teacher123')
+        _ensure(teacher_user, 'teacher123')
         teacher_user.save()
 
         parent_user, _ = User.objects.get_or_create(
             username='parent',
             defaults={'role': 'PARENT', 'email': 'parent@example.com',
                       'first_name': 'S.', 'last_name': 'Kumar'})
-        parent_user.set_password('parent123')
-        parent_user.save()
+        _ensure(parent_user, 'parent123')
 
         from feedback.models import Parent, Teacher
         from students.models import Student as Stu

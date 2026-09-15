@@ -55,6 +55,7 @@ ROLE_MODULES = {
         _mod('audit', 'Audit Logs', '🧾', SYSTEM, '', '', 'soon'),
         _mod('notifications', 'Notifications', '🔔', SYSTEM, '/notifications/'),
         _mod('settings', 'System Settings', '⚙️', SYSTEM, '', '', 'soon'),
+        _mod('demo', 'Demo Data', '🧹', SYSTEM, '/demo-data/', 'Clear or reseed demo records'),
     ],
 
     'HR': [
@@ -80,6 +81,7 @@ ROLE_MODULES = {
         _mod('published', 'Published Portfolios', '🌐', PORTFOLIOS, '/portfolio/published/'),
         _mod('reports', 'Reports & Analytics', '📈', PORTFOLIOS, '/analytics/'),
         _mod('notifications', 'Notifications', '🔔', SYSTEM, '/notifications/'),
+        _mod('demo', 'Demo Data', '🧹', SYSTEM, '/demo-data/', 'Clear or reseed demo records'),
     ],
 
     'TEACHER': [

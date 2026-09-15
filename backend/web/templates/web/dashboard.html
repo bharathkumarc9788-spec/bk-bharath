@@ -5,6 +5,20 @@
 {% block content %}
 
 {% if view_role == 'management' %}
+  <div class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 20px">
+    <div style="flex:1; min-width:200px">
+      <b style="font-size:15px">⚡ Quick Actions</b>
+      <div class="muted" style="font-size:13px">Manage records, portfolios and demo data.</div>
+    </div>
+    <div class="row">
+      <a class="btn btn-sm" href="/students/new/">➕ Add Student</a>
+      <a class="btn btn-sm" href="/bulk-upload/">📤 Bulk Upload</a>
+      <a class="btn btn-sm" href="/portfolio/generator/">⚙️ Generate</a>
+      <a class="btn btn-sm" href="/portfolio/approval/">✅ Approvals</a>
+      <a class="btn btn-sm" href="/demo-data/">🧹 Demo Data</a>
+    </div>
+  </div>
+
   <div class="stat-grid">
     <div class="stat-card"><div class="icon" style="background:#6366f11a;color:#4f46e5">🧑‍🎓</div>
       <div><div class="value">{{ kpis.total_students }}</div><div class="label">Total Students</div></div></div>

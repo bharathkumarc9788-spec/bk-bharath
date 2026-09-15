@@ -1,0 +1,80 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Demo Data Manager{% endblock %}
+{% block page_subtitle %}View, clear or reseed all demo records.{% endblock %}
+{% block content %}
+
+<div class="card page-head" style="display:flex; align-items:center; gap:14px; margin-bottom:22px">
+  <div style="flex:1">
+    <span class="kicker">System Tools</span>
+    <h1 style="font-size:24px; margin-top:6px">Demo Data Manager</h1>
+    <p class="page-head-sub">
+      Demo students, portfolios and notifications are seeded for your convenience.
+      Clear them whenever you want a fresh database for real records — or reseed them for a live demo.
+    </p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="icon" style="background:#6366f11a;color:#4f46e5">🧑‍🎓</div>
+    <div><div class="value">{{ counts.students }}</div><div class="label">Students</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#0ea5e91a;color:#0ea5e9">📁</div>
+    <div><div class="value">{{ counts.portfolios }}</div><div class="label">Portfolios</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#8b5cf61a;color:#8b5cf6">🪄</div>
+    <div><div class="value">{{ counts.versions }}</div><div class="label">Versions</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#f59e0b1a;color:#f59e0b">✅</div>
+    <div><div class="value">{{ counts.approvals }}</div><div class="label">Approvals</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#22c55e1a;color:#22c55e">👁️</div>
+    <div><div class="value">{{ counts.views }}</div><div class="label">Views Logged</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#f43f5e1a;color:#f43f5e">💬</div>
+    <div><div class="value">{{ counts.teacher_feedback|add:counts.parent_feedback }}</div><div class="label">Feedback</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#14b8a61a;color:#14b8a6">🎯</div>
+    <div><div class="value">{{ counts.goals }}</div><div class="label">Goals</div></div></div>
+  <div class="stat-card"><div class="icon" style="background:#64748b1a;color:#64748b">🔔</div>
+    <div><div class="value">{{ counts.notifications }}</div><div class="label">Notifications</div></div></div>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="border-color:rgba(239,68,68,.35)">
+    <h3>🧹 Clear All Demo Data</h3>
+    <p class="muted" style="line-height:1.7">
+      Permanently removes <b>all students</b>, their 360° records, portfolios, versions,
+      approvals and notification history. Demo student login accounts are removed too.
+      Your <b>staff accounts are kept</b> so you can keep using the system.
+    </p>
+    <form method="post" action="/demo-data/" onsubmit="return confirm('This will delete ALL students and portfolios. Continue?')">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="clear">
+      <button class="btn btn-danger" type="submit">🗑 Clear All Demo Data</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>✨ Reseed Demo Data</h3>
+    <p class="muted" style="line-height:1.7">
+      Recreates the demo dataset — 11 students with full 360° profiles, the 5 portfolio
+      templates, teacher &amp; parent feedback, goals and portfolios in every workflow
+      state (draft, submitted, under review, approved, revision, published).
+    </p>
+    <form method="post" action="/demo-data/">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reseed">
+      <button class="btn btn-primary" type="submit">✨ Reseed Demo Data</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h3 class="mb">Would you like a quick "Edit" shortcut instead of clearing everything?</h3>
+  <p class="muted" style="line-height:1.7">
+    You can edit any student's 360° profile directly from the
+    <a href="/students/">Students page</a> — every row has an <b>Edit</b> button that opens
+    the profile's Personal tab, where education, skills, projects, internships,
+    certifications, achievements, activities, feedback and goals are all editable.
+  </p>
+  <div class="row mt">
+    <a class="btn" href="/students/">🎓 Go to Students</a>
+    <a class="btn" href="/portfolio/generator/">⚙️ Portfolio Generator</a>
+  </div>
+</div>
+
+{% endblock %}

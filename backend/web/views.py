@@ -1087,6 +1087,72 @@ def _user_notifications(user):
 
 
 @login_required
+def student_delete(request, student_id):
+    """Delete a single student (management only)."""
+    student = get_object_or_404(Student, pk=student_id)
+    if not can_edit_student(student, request.user):
+        messages.error(request, 'You do not have permission to delete this student.')
+        return redirect('web:students')
+    if request.method == 'POST':
+        name = student.name
+        student.delete()
+        log_action(request.user, 'Student Deleted', 'Student', str(student_id), f'Deleted {name}')
+        messages.success(request, f'Student "{name}" deleted.')
+    return redirect('web:students')
+
+
+@role_required('HR')
+def demo_data(request):
+    """Demo data manager: view counts, clear all demo records, or reseed."""
+    from goals.models import StudentGoal
+    from feedback.models import ParentFeedback, TeacherFeedback
+    from notifications.models import Notification
+    from portfolio.models import PortfolioApproval, PortfolioVersion, PortfolioView
+
+    counts = {
+        'students': Student.objects.count(),
+        'portfolios': Portfolio.objects.count(),
+        'versions': PortfolioVersion.objects.count(),
+        'approvals': PortfolioApproval.objects.count(),
+        'views': PortfolioView.objects.count(),
+        'teacher_feedback': TeacherFeedback.objects.count(),
+        'parent_feedback': ParentFeedback.objects.count(),
+        'goals': StudentGoal.objects.count(),
+        'notifications': Notification.objects.count(),
+        'audit_logs': AuditLog.objects.count(),
+        'student_users': User.objects.filter(role='STUDENT').count(),
+    }
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'clear':
+            # Deleting students cascades to education/skills/projects/internships/
+            # certifications/achievements/activities/goals and portfolios (which
+            # cascade to versions/approvals/views).
+            Student.objects.all().delete()
+            TeacherFeedback.objects.all().delete()
+            ParentFeedback.objects.all().delete()
+            User.objects.filter(role='STUDENT').delete()
+            Notification.objects.all().delete()
+            log_action(request.user, 'Demo Data Cleared', 'System', '',
+                       'Cleared all demo student & portfolio data')
+            messages.success(request, '🧹 All demo data cleared. The database is ready for real records.')
+            return redirect('web:demo_data')
+        if action == 'reseed':
+            from portfolio.management.commands.seed import Command as SeedCommand
+            try:
+                SeedCommand().handle()
+                messages.success(request, '✨ Demo data reseeded successfully.')
+            except Exception as exc:  # noqa: BLE001
+                messages.error(request, f'Reseed failed: {exc}')
+            return redirect('web:demo_data')
+
+    return render(request, 'web/demo_data.html', {
+        'counts': counts,
+    })
+
+
+@login_required
 def notifications(request):
     items = _user_notifications(request.user)
     unread = items.filter(is_read=False).count()

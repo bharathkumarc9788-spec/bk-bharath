@@ -17,6 +17,7 @@ urlpatterns = [
     path('students/', views.students_list, name='students'),
     path('students/new/', views.student_create, name='student_create'),
     path('students/<int:student_id>/', views.student_detail, name='student_detail'),
+    path('students/<int:student_id>/delete/', views.student_delete, name='student_delete'),
     path('students/<int:student_id>/personal/', views.personal_update, name='personal_update'),
     path('students/<int:student_id>/<str:section>/add/', views.section_add, name='section_add'),
     path('students/<int:student_id>/<str:section>/<int:item_id>/delete/',
@@ -39,6 +40,9 @@ urlpatterns = [
 
     # Notifications
     path('notifications/', views.notifications, name='notifications'),
+
+    # Demo data manager (Super Admin / HR only)
+    path('demo-data/', views.demo_data, name='demo_data'),
 
     # Public portfolio (no login)
     path('portfolio/public/<slug:slug>/', views.public_portfolio, name='public_portfolio'),
