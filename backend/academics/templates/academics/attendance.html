@@ -1,0 +1,82 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Attendance{% endblock %}
+{% block page_subtitle %}Daily marking · Percentage · Low-attendance alerts{% endblock %}
+{% block content %}
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title"><h3>Mark Attendance</h3></div>
+    <form method="get" action="/academics/attendance/" class="search-bar mb">
+      <select name="class">
+        {% for c in classes %}<option value="{{ c.id }}" {% if selected and c.id == selected.id %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+      <input type="date" name="date" value="{{ sel_date }}">
+      <button class="btn btn-sm" type="submit">Load</button>
+    </form>
+
+    {% if rows %}
+    <form method="post" action="/academics/attendance/">
+      {% csrf_token %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Status</th><th>Late (min)</th></tr></thead>
+          <tbody>
+            {% for r in rows %}
+              <tr>
+                <td>
+                  <span class="avatar-sm">{{ r.student.name|first }}</span>
+                  <b>{{ r.student.name }}</b>
+                  <small class="muted"> · {{ r.student.register_number }}</small>
+                  {% if r.present_pct is not None %}<span class="badge badge-green"> {{ r.present_pct }}% present</span>{% endif %}
+                </td>
+                <td>
+                  <select name="att-{{ r.student.id }}">
+                    <option {% if r.status == 'PRESENT' %}selected{% endif %}>PRESENT</option>
+                    <option {% if r.status == 'ABSENT' %}selected{% endif %}>ABSENT</option>
+                    <option {% if r.status == 'LEAVE' %}selected{% endif %}>LEAVE</option>
+                    <option {% if r.status == 'LATE' %}selected{% endif %}>LATE</option>
+                  </select>
+                </td>
+                <td><input type="number" name="late-{{ r.student.id }}" value="{{ r.record.late_minutes|default:0 }}" style="width:80px"></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if can_mark %}<button class="btn btn-success mt" type="submit">💾 Save Attendance</button>{% endif %}
+    </form>
+    {% else %}<div class="empty">No students in this class yet — allocate students from Class / Section.</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <h3 class="mb">Low Attendance Alerts (3+ misses)</h3>
+    {% if alerts %}
+      {% for a in alerts %}
+        <div class="list-item">
+          <div><h4>{{ a.name }}</h4><div class="muted">{{ a.register_number }} · {{ a.missed }} miss(es)</div></div>
+          <span class="badge badge-red">Alert</span>
+        </div>
+      {% endfor %}
+    {% else %}<div class="empty">No low-attendance alerts 🎉</div>{% endif %}
+
+    <h3 class="mb">Recent Records</h3>
+    {% if recent %}
+      {% for r in recent %}
+        <div class="list-item" style="padding:10px">
+          <span>{{ r.student.name }}</span>
+          <div class="row">
+            <span class="muted">{{ r.date }}</span>
+            <span class="badge {{ r.status|lower }}">{{ r.status }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}<div class="empty">No attendance recorded yet</div>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title"><h3>Teacher Attendance</h3><a class="btn btn-sm" href="/academics/attendance/teacher/">Open Teacher Attendance →</a></div>
+  <p class="muted">Mark teacher attendance, manage leaves and view workload in one place.</p>
+</div>
+
+{% endblock %}

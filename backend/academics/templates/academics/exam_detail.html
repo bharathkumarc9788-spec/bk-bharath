@@ -1,0 +1,60 @@
+{% extends 'web/base.html' %}
+{% block page_title %}{{ exam.name }}{% endblock %}
+{% block page_subtitle %}{{ exam.class_section }}{% endblock %}
+{% block content %}
+
+<div class="grid-2">
+  <div class="card">
+    <h3 class="mb">Exam Schedule</h3>
+    <form method="post" action="/academics/exams/{{ exam.id }}/" style="border:1px dashed var(--border); border-radius:12px; padding:14px; background:#f8f9ff">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group"><label>Subject</label>
+          <select name="subject"><option value="">— Select —</option>
+            {% for s in subjects %}<option value="{{ s.id }}">{{ s }}</option>{% endfor %}</select></div>
+        <div class="form-group"><label>Date</label><input type="date" name="date"></div>
+        <div class="form-group"><label>Time</label><input type="time" name="start_time"></div>
+        <div class="form-group"><label>Max Marks</label><input type="number" name="max_marks" value="100"></div>
+      </div>
+      <button class="btn btn-primary btn-sm mt" type="submit">+ Add Subject</button>
+    </form>
+
+    <div class="mt">
+      {% for s in schedule %}
+        <div class="list-item" style="padding:11px">
+          <b>{{ s.subject|default:'—' }}</b>
+          <div class="row"><span class="muted">{{ s.date|default:'—' }} {{ s.start_time|default:'' }} · max {{ s.max_marks }}</span>
+            <a class="btn btn-sm" href="/academics/exams/{{ exam.id }}/marks/{{ s.subject_id }}/">✏️ Enter Marks</a>
+          </div>
+        </div>
+      {% empty %}<div class="empty">No subjects scheduled yet</div>{% endfor %}
+    </div>
+
+    <a class="btn btn-sm mt" href="/academics/exams/">← Exams</a>
+  </div>
+
+  <div class="card">
+    <h3 class="mb">Result Summary (auto)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rank</th><th>Student</th><th>Total</th><th>%</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for r in results %}
+            <tr>
+              <td><span class="badge badge-violet">#{{ r.rank }}</span></td>
+              <td><b>{{ r.student.name }}</b></td>
+              <td>{{ r.total|floatformat:0 }}</td>
+              <td>{{ r.percent }}%</td>
+              <td>{% if r.passed %}<span class="badge badge-green">PASS</span>{% else %}<span class="badge badge-red">FAIL</span>{% endif %}</td>
+              <td><a class="btn btn-sm" href="/academics/report-card/{{ r.student.id }}/">📄 Card</a></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6"><div class="empty">No marks entered yet — schedule subjects and enter marks.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

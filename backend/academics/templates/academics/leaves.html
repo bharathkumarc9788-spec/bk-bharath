@@ -1,0 +1,50 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Leave Management{% endblock %}
+{% block page_subtitle %}Request & approve leave · Teacher & staff{% endblock %}
+{% block content %}
+
+<div class="grid-2">
+  <div class="card">
+    <h3 class="mb">Submit Leave Request</h3>
+    {% if role != 'PARENT' %}
+    <form method="post" action="/academics/leaves/">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group"><label>Type</label>
+          <select name="leave_type"><option value="CASUAL">Casual</option><option value="SICK">Sick</option><option value="EARNED">Earned</option></select></div>
+        <div class="form-group"><label>From</label><input type="date" name="from_date"></div>
+        <div class="form-group"><label>To</label><input type="date" name="to_date"></div>
+        <div class="form-group"><label>Reason</label><textarea name="reason"></textarea></div>
+      </div>
+      <button class="btn btn-primary mt" type="submit">Submit Request</button>
+    </form>
+    {% else %}<div class="empty">Parents can submit leave via the child's profile in this version.</div>{% endif %}
+
+    <h3 class="mb">My Requests</h3>
+    {% for l in mine %}
+      <div class="list-item" style="padding:10px">
+        <div><b>{{ l.get_leave_type_display }}</b><div class="muted">{{ l.from_date }} → {{ l.to_date }} · {{ l.reason|truncatechars:60 }}</div></div>
+        <span class="badge badge-amber">{{ l.get_status_display }}</span>
+      </div>
+    {% empty %}<div class="empty">No leave requests</div>{% endfor %}
+  </div>
+
+  <div class="card">
+    <h3 class="mb">Pending Requests ({{ role }} view)</h3>
+    {% if role == 'SUPER_ADMIN' or role == 'HR' %}
+      {% for l in pending %}
+        <div class="list-item">
+          <div><b>{{ l.requester.get_full_name|default:l.requester }}</b><div class="muted">{{ l.get_leave_type_display }} · {{ l.from_date }} → {{ l.to_date }}<br>{{ l.reason }}</div></div>
+          <form method="post" action="/academics/leaves/" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="uid" value="{{ l.requester_id }}">
+            <button class="btn btn-success btn-sm" name="action" value="approved">✔ Approve</button>
+            <button class="btn btn-danger btn-sm" name="action" value="rejected">✖ Reject</button>
+          </form>
+        </div>
+      {% empty %}<div class="empty">No pending leave requests 🎉</div>{% endfor %}
+    {% else %}<div class="empty">Only management can approve leave.</div>{% endif %}
+  </div>
+</div>
+
+{% endblock %}

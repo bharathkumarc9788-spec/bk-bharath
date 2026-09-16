@@ -1,0 +1,68 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Report Card{% endblock %}
+{% block page_subtitle %}{{ student.name }} · {{ student.register_number }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="row-between">
+    <div class="row">
+      <span class="avatar-sm" style="width:52px;height:52px;font-size:20px">{{ student.name|first }}</span>
+      <div>
+        <h3>{{ student.name }}</h3>
+        <div class="muted">{{ student.register_number }} · {{ student.department|default:'—' }}</div>
+      </div>
+    </div>
+    <span class="badge badge-blue">Attendance {{ attendance_pct|default:'—' }}%</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3 class="mb">Exam Results</h3>
+    {% for r in results %}
+      <div class="list-item" style="display:block">
+        <div class="row-between">
+          <b>{{ r.exam.name }}</b>
+          {% if r.passed %}<span class="badge badge-green">PASS</span>{% else %}<span class="badge badge-red">FAIL</span>{% endif %}
+        </div>
+        <div class="mt table-wrap" style="border:none">
+          <table>
+            <thead><tr><th>Subject</th><th>Internal</th><th>Practical</th><th>Theory</th><th>Total</th><th>%</th><th>Grade</th></tr></thead>
+            <tbody>
+              {% for m in r.marks %}
+                <tr>
+                  <td>{{ m.subject|default:'—' }}</td>
+                  <td>{{ m.internal_marks }}</td><td>{{ m.practical_marks }}</td><td>{{ m.obtained_marks }}</td>
+                  <td><b>{{ m.total|floatformat:1 }}</b></td>
+                  <td>{{ m.percentage }}%</td>
+                  <td><span class="badge badge-violet">{{ m.grade }}</span></td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="4" class="muted">Overall</td>
+                <td><b>{{ r.total|floatformat:1 }}</b></td>
+                <td><b>{{ r.percent }}%</b></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty">No marks to show yet.</div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3 class="mb">Recent Attendance</h3>
+    {% for a in attendance %}
+      <div class="list-item" style="padding:10px">
+        <span>{{ a.date }}</span>
+        <span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span>
+      </div>
+    {% empty %}<div class="empty">No attendance recorded</div>{% endfor %}
+    <a class="btn btn-sm mt" href="javascript:history.back()">← Back</a>
+  </div>
+</div>
+
+{% endblock %}

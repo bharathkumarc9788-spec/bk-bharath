@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     # local apps
     'accounts',
     'common',
+    'academics',
     'students',
     'education',
     'skills',

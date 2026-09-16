@@ -40,3 +40,11 @@ def split(value, sep=','):
 def initial(value):
     """First character used for avatar initials."""
     return (str(value or '').strip() or ' ')[0]
+
+
+@register.filter
+def get_item(dictionary, key):
+    """Dict lookup by key (used by tables with dynamic keys)."""
+    if not dictionary:
+        return None
+    return dictionary.get(key)

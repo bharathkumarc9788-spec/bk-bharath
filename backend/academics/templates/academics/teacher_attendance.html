@@ -1,0 +1,54 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Teacher Attendance{% endblock %}
+{% block content %}
+
+<div class="grid-2">
+  <div class="card">
+    <h3 class="mb">Mark Teacher Attendance</h3>
+    {% if can_mark %}
+    <form method="post" action="/academics/attendance/teacher/">
+      {% csrf_token %}
+      <div class="form-group mb"><label>Date</label><input type="date" name="tdate"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Teacher</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for t in teachers %}
+              <tr>
+                <td><b>{{ t.name }}</b><div class="muted">{{ t.department|default:'' }} · {{ t.emp_id|default:'' }}</div></td>
+                <td>
+                  <select name="tat-{{ t.id }}">
+                    <option>PRESENT</option><option>ABSENT</option><option>LEAVE</option><option>LATE</option>
+                  </select>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2"><div class="empty">No teachers registered yet</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-success mt" type="submit">💾 Save</button>
+    </form>
+    {% else %}<div class="empty">Only management can mark teacher attendance.</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <h3 class="mb">Recent Teacher Attendance</h3>
+    {% if recent %}
+      {% for r in recent %}
+        <div class="list-item" style="padding:10px">
+          <div><b>{{ r.teacher.name }}</b><div class="muted">{{ r.date }}</div></div>
+          <span class="badge">{{ r.status }}</span>
+        </div>
+      {% endfor %}
+    {% else %}<div class="empty">No teacher attendance recorded yet</div>{% endif %}
+
+    <div class="mt">
+      <a class="btn" href="/academics/attendance/">← Student Attendance</a>
+      <a class="btn" href="/academics/leaves/">🗓️ Leave Requests</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

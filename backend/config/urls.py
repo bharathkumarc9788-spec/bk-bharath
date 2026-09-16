@@ -13,6 +13,8 @@ urlpatterns = [
     path('api/portfolio/', include('portfolio.urls')),
     path('api/dashboard/', include('analytics.urls')),
     path('api/notifications/', include('notifications.urls')),
+    # Academics (Teacher/Parent/Class/Department/Attendance/Exams)
+    path('academics/', include('academics.urls')),
     # Python (server-rendered) frontend — serves the app at http://localhost:8000/
     path('', include('web.urls')),
 ]

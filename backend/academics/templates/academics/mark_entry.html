@@ -1,0 +1,35 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Marks Entry{% endblock %}
+{% block page_subtitle %}{{ exam.name }} · {{ subject }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <form method="post" action="/academics/exams/{{ exam.id }}/marks/{{ subject.id }}/">
+    {% csrf_token %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Internal</th><th>Practical</th><th>Obtained</th><th class="muted">Auto: Total / Grade</th></tr></thead>
+        <tbody>
+          {% for s in students %}
+            {% with m=entries|get_item:s.id %}
+            <tr>
+              <td><b>{{ s.name }}</b><small class="muted"> · {{ s.register_number }}</small></td>
+              <td><input type="number" name="internal-{{ s.id }}" value="{{ m.internal_marks|default_if_none:'' }}" style="width:90px" step="0.5"></td>
+              <td><input type="number" name="practical-{{ s.id }}" value="{{ m.practical_marks|default_if_none:'' }}" style="width:90px" step="0.5"></td>
+              <td><input type="number" name="obtained-{{ s.id }}" value="{{ m.obtained_marks|default_if_none:'' }}" style="width:90px" step="0.5"></td>
+              <td class="muted" style="font-size:12px">internal + practical + obtained</td>
+            </tr>
+            {% endwith %}
+          {% empty %}
+            <tr><td colspan="5"><div class="empty">No students in this exam class.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-success mt" type="submit">💾 Save Marks</button>
+    <a class="btn btn-sm mt" href="/academics/exams/{{ exam.id }}/">← Back</a>
+  </form>
+</div>
+
+{% endblock %}

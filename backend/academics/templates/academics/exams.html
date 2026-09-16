@@ -1,0 +1,44 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Examinations &amp; Results{% endblock %}
+{% block page_subtitle %}Exam creation · Schedule · Mark entry · Results{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title">
+    <h3>Exam Schedule</h3>
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('add-exam').style.display = document.getElementById('add-exam').style.display === 'none' ? 'block' : 'none'">+ New Exam</button>
+  </div>
+
+  <form method="post" action="/academics/exams/" id="add-exam"
+        style="display:none; border:1px dashed var(--border); border-radius:16px; padding:18px; background:#f8f9ff">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-group"><label>Exam Name</label><input name="name" placeholder="e.g. Mid-Term 1"></div>
+      <div class="form-group"><label>Class / Section</label>
+        <select name="class_section">{% for c in classes %}<option value="{{ c.id }}">{{ c }}</option>{% endfor %}</select></div>
+      <div class="form-group"><label>Start Date</label><input type="date" name="start_date"></div>
+      <div class="form-group"><label>End Date</label><input type="date" name="end_date"></div>
+      <div class="form-group"><label>Status</label>
+        <select name="status"><option value="SCHEDULED">Scheduled</option><option value="IN_PROGRESS">In Progress</option><option value="COMPLETED">Completed</option></select></div>
+    </div>
+    <button class="btn btn-primary btn-sm mt" type="submit">Create Exam</button>
+  </form>
+</div>
+
+<div class="grid-2">
+  {% for exam in exams %}
+    <div class="card">
+      <div class="card-title">
+        <div><h3>{{ exam.name }}</h3><div class="muted">{{ exam.class_section }} · {{ exam.start_date }}</div></div>
+        <span class="badge badge-amber">{{ exam.get_status_display }}</span>
+      </div>
+      <div class="row mt">
+        <a class="btn btn-sm btn-primary" href="/academics/exams/{{ exam.id }}/">Open →</a>
+      </div>
+    </div>
+  {% empty %}
+    <div class="card"><div class="empty"><div class="big">🗓️</div>No exams yet — create one to get started.</div></div>
+  {% endfor %}
+</div>
+
+{% endblock %}
