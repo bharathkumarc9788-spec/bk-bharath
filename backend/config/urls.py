@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/goals/', include('goals.urls')),
     path('api/portfolio/', include('portfolio.urls')),
     path('api/dashboard/', include('analytics.urls')),
+    path('api/analytics/', include('analytics.urls')),
     path('api/notifications/', include('notifications.urls')),
     # Academics (Teacher/Parent/Class/Department/Attendance/Exams)
     path('academics/', include('academics.urls')),

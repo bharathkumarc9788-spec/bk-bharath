@@ -175,6 +175,11 @@ def erp_module_add(request, module):
         return redirect('web:dashboard')
 
     data = {f['key']: (request.POST.get(f['key'], '') or '').strip() for f in cfg['schema']}
+    required = {'school': 'name', 'academic-years': 'name', 'boards': 'name',
+                'houses': 'name', 'holidays': 'title', 'announcements': 'title'}
+    if module in required and not data.get(required[module]):
+        messages.error(request, f'{cfg["title"]}: «{required[module]}» is required.')
+        return redirect(f'/erp/{module}/')
     try:
         if module == 'school':
             obj = SchoolProfile.objects.first() or SchoolProfile()

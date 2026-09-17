@@ -139,6 +139,8 @@ def module_add(request, module):
         'academic_year', 'capacity', 'students')}
 
     try:
+        if module in ('teacher', 'parent') and not data['username']:
+            raise ValueError('Username / email is required')
         if module == 'teacher':
             parts = (data.get('full_name') or 'Teacher').split(' ', 1)
             user, _ = User.objects.get_or_create(
@@ -175,12 +177,16 @@ def module_add(request, module):
             pp.children.set(Student.objects.filter(pk__in=ids))
             label = pp.name
         elif module == 'department':
+            if not data.get('name'):
+                raise ValueError('Department name is required')
             dept = Department.objects.create(name=data['name'], code=data['code'],
                                              description=data['description'])
             for s in [s.strip() for s in data['subjects'].split(',') if s.strip()]:
                 Subject.objects.get_or_create(department=dept, name=s)
             label = dept.name
         else:  # class
+            if not data.get('name'):
+                raise ValueError('Class name is required')
             klass = ClassSection.objects.create(
                 name=data['name'], section=data['section'] or 'A',
                 academic_year=data['academic_year'] or '2025-2026',
@@ -426,11 +432,15 @@ def leave_page(request):
             LeaveRequest.objects.filter(requester_id=uid, status='PENDING').update(status=action.upper())
             messages.success(request, 'Leave updated.')
         else:
+            if not request.POST.get('leave_type'):
+                messages.error(request, 'Select a leave type.')
+                return redirect('/academics/leaves/')
+            from_date = request.POST.get('from_date') or date.today().isoformat()
             LeaveRequest.objects.create(
                 requester=request.user,
                 leave_type=request.POST.get('leave_type', 'CASUAL'),
-                from_date=request.POST.get('from_date'),
-                to_date=request.POST.get('to_date') or request.POST.get('from_date'),
+                from_date=from_date,
+                to_date=request.POST.get('to_date') or from_date,
                 reason=request.POST.get('reason', ''))
             messages.success(request, 'Leave request submitted.')
         return redirect('/academics/leaves/')
