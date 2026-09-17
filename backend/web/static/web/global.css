@@ -984,3 +984,20 @@ a.tr-hover:hover td { background: #f6f7ff; }
   .public-hero { padding: 40px 16px 34px; }
 }
 .content > * { animation: riseIn 0.5s var(--ease) both; }
+/* ERP form helpers */
+.check-line { display:inline-flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; color:var(--muted,#64748b); }
+.check-line input { width:18px; height:18px; accent-color:#6366f1; cursor:pointer; }
+.mini-form { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+.stat-chip { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:999px; font-size:13px; font-weight:600; background:linear-gradient(135deg,#eef2ff,#fdf4ff); color:#4f46e5; }
+.warn-chip { background:linear-gradient(135deg,#fff7ed,#fef2f2); color:#ea580c; }
+
+/* ERP layout helpers */
+.grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+@media (max-width:920px) { .grid2, .grid3 { grid-template-columns:1fr; } }
+.mini-stat { display:flex; flex-direction:column; gap:4px; padding:14px 16px; border-radius:14px; background:linear-gradient(135deg,#eef2ff,#f8fafc); font-size:13px; color:#475569; }
+.mini-stat b { font-size:14px; color:#1e293b; }
+.mini-stat.warn { background:linear-gradient(135deg,#fff7ed,#fef2f2); }
+
+/* ERP reports */
+.stat-num { font-size:34px; font-weight:800; line-height:1; margin-top:8px; background:linear-gradient(135deg,#4f46e5,#9333ea); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }

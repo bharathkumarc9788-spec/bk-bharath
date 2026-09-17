@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls')),
     # Academics (Teacher/Parent/Class/Department/Attendance/Exams)
     path('academics/', include('academics.urls')),
+    # School ERP (Administration/Boards/Homework/PET/Fees/Hostel/HRMS/Inventory)
+    path('erp/', include('erp.urls')),
     # Python (server-rendered) frontend — serves the app at http://localhost:8000/
     path('', include('web.urls')),
 ]

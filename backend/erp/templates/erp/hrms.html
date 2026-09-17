@@ -1,0 +1,63 @@
+{% extends 'web/base.html' %}
+{% block page_title %}HRMS — Human Resources{% endblock %}
+{% block page_subtitle %}Employee Master · Departments · Designations{% endblock %}
+{% block content %}
+
+{% if manage %}
+<div class="card">
+  <div class="card-title">
+    <div class="row"><h3>👥 Register Employee</h3><span class="badge badge-blue">{{ employees|length }} employees</span></div>
+  </div>
+  <form method="post" action="/erp/hrms/">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-group"><label>Username / Email</label><input name="username" required></div>
+      <div class="form-group"><label>Password</label><input type="password" name="password"></div>
+      <div class="form-group"><label>Full Name</label><input name="full_name"></div>
+      <div class="form-group"><label>Employee ID</label><input name="emp_id"></div>
+      <div class="form-group"><label>Designation</label><input name="designation"></div>
+      <div class="form-group"><label>Department</label>
+        <select name="department"><option value="">— None —</option>
+          {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Joining Date</label><input type="date" name="joining_date"></div>
+      <div class="form-group"><label>Qualification</label><input name="qualification"></div>
+      <div class="form-group"><label>Experience (years)</label><input type="number" name="experience_years" value="0" min="0"></div>
+      <div class="form-group"><label>Phone</label><input name="phone"></div>
+      <div class="form-group"><label>Employment Status</label>
+        <select name="employment_status">{% for v, l in statuses %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+      </div>
+    </div>
+    <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Register Employee</button></div>
+  </form>
+</div>
+{% else %}
+<div class="card mt"><div class="empty">Only Super Admin / HR can manage employees.</div></div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-title"><div class="row"><h3>📋 Employee Master</h3></div></div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>#</th><th>Employee</th><th>Emp ID</th><th>Designation</th><th>Department</th><th>Joined</th><th>Experience</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for e in employees %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><b>{{ e.name }}</b></td>
+            <td>{{ e.emp_id|default:'—' }}</td>
+            <td>{{ e.designation|default:'—' }}</td>
+            <td>{{ e.department|default:'—' }}</td>
+            <td>{{ e.joining_date|default:'—' }}</td>
+            <td>{{ e.experience_years }}y</td>
+            <td><span class="badge badge-blue">{{ e.get_employment_status_display }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8"><div class="empty">No employees registered yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

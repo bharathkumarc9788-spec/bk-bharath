@@ -1,0 +1,43 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Reports & Analytics{% endblock %}
+{% block page_subtitle %}School KPIs · Completion · Department Analysis · Export{% endblock %}
+{% block content %}
+
+<div class="grid3">
+  <div class="card"><div class="card-title"><h3>🧑‍🎓 Students</h3></div><div class="stat-num" style="color:#4f46e5">{{ students }}</div></div>
+  <div class="card"><div class="card-title"><h3>📁 Portfolios</h3></div><div class="stat-num" style="color:#7c3aed">{{ portfolios }}</div></div>
+  <div class="card"><div class="card-title"><h3>🌐 Published</h3></div><div class="stat-num" style="color:#0ea5e9">{{ published }}</div></div>
+  <div class="card"><div class="card-title"><h3>📊 Avg Completion</h3></div><div class="stat-num" style="color:#059669">{{ avg_completion }}%</div></div>
+</div>
+
+<div class="card mt">
+  <div class="card-title"><h3>📈 Profile Completion Distribution</h3></div>
+  <div class="chart-bars mt">
+    <div class="hbar-row"><span class="hbar-label">0–40%</span><div class="hbar-track"><div class="hbar-fill" style="width:{{ completion_bins|get_item:'0-40' }}%; background:#ef4444"></div></div><span class="hbar-value">{{ completion_bins|get_item:'0-40' }}</span></div>
+    <div class="hbar-row"><span class="hbar-label">40–70%</span><div class="hbar-track"><div class="hbar-fill" style="width:{{ completion_bins|get_item:'40-70' }}%; background:#f59e0b"></div></div><span class="hbar-value">{{ completion_bins|get_item:'40-70' }}</span></div>
+    <div class="hbar-row"><span class="hbar-label">70–100%</span><div class="hbar-track"><div class="hbar-fill" style="width:{{ completion_bins|get_item:'70-100' }}%; background:#10b981"></div></div><span class="hbar-value">{{ completion_bins|get_item:'70-100' }}</span></div>
+  </div>
+</div>
+
+<div class="card mt">
+  <div class="card-title"><h3>🏫 Department Analysis</h3></div>
+  <div class="chart-bars mt">
+    {% for dept, count in department_counts.items %}
+    <div class="hbar-row"><span class="hbar-label">{{ dept }}</span><div class="hbar-track"><div class="hbar-fill" style="width:{{ count }}%; background:#6366f1"></div></div><span class="hbar-value">{{ count }}</span></div>
+    {% empty %}
+      <div class="empty">No students yet.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card mt">
+  <div class="card-title"><h3>⬇️ Export Reports</h3></div>
+  <div class="row mt" style="gap:10px">
+    <a class="btn btn-primary" href="/erp/reports/?format=csv&type=students">📄 Students CSV</a>
+    <a class="btn" href="/erp/reports/?format=csv&type=attendance">📄 Attendance CSV</a>
+    <a class="btn" href="/erp/reports/?format=csv&type=marks">📄 Marks CSV</a>
+  </div>
+</div>
+
+{% endblock %}

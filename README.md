@@ -89,3 +89,11 @@ Each seeded student has a login account: **username = student email**,
 - Bulk CSV/XLSX upload with preview + import report
 - Portfolio generator, templates, approval queue, publish + public URL + QR
 - Views analytics, notifications
+- **School ERP modules** (`/erp/…`) — all management modules are real working
+  pages: School Profile · Academic Year · Boards (CBSE/Matriculation) ·
+  Houses · Holidays/Calendar · Subjects + teacher allocation · Homework &
+  assignments (create → submit → grade) · PET / Sports · Finance & Fees
+  (structures, payments, student ledger) · Hostel (rooms, occupancy,
+  bed allocation) · HRMS (employee master) · Inventory (items, stock
+  movements, low-stock alerts) · Communication/Announcements · Audit Logs ·
+  Reports & Analytics with CSV export.

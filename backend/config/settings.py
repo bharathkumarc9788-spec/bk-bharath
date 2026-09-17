@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'accounts',
     'common',
     'academics',
+    'erp',
     'students',
     'education',
     'skills',

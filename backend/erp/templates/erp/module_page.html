@@ -1,0 +1,63 @@
+{% extends 'web/base.html' %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}{{ sub }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title">
+    <div class="row">
+      <h3>{{ icon }} {{ title }}</h3>
+      <span class="badge badge-blue">{{ stats.total }} records</span>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('add-form').style.display = document.getElementById('add-form').style.display === 'none' ? 'block' : 'none'">+ Add New</button>
+  </div>
+
+  <form method="post" action="/erp/{{ module }}/add/" id="add-form"
+      style="display:none; border:1px dashed var(--border); border-radius:16px; padding:18px; background:#f8f9ff">
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for f in schema %}
+        <div class="form-group">
+          <label>{{ f.label }}</label>
+          {% if f.type == 'textarea' %}<textarea name="{{ f.key }}"></textarea>
+          {% elif f.type == 'select' %}<select name="{{ f.key }}"><option value="">— Select —</option>
+            {% for o in f.options %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}</select>
+          {% elif f.type == 'password' %}<input type="password" name="{{ f.key }}">
+          {% elif f.type == 'number' %}<input type="number" name="{{ f.key }}" min="0">
+          {% elif f.type == 'date' %}<input type="date" name="{{ f.key }}">
+          {% elif f.type == 'checkbox' %}<label class="check-line"><input type="checkbox" name="{{ f.key }}"> Yes</label>
+          {% else %}<input type="text" name="{{ f.key }}">{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="row mt">
+      <button class="btn btn-primary btn-sm" type="submit">Save</button>
+      <button class="btn btn-sm" type="button" onclick="document.getElementById('add-form').style.display='none'">Cancel</button>
+    </div>
+  </form>
+
+  <div class="mt table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Record</th><th style="width:110px">Actions</th></tr></thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.html|safe }}</td>
+            <td>
+              <form method="post" action="/erp/{{ module }}/{{ item.obj.id }}/delete/"
+                    onsubmit="return confirm('Delete this record?')" style="display:inline">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-danger" type="submit">🗑</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3"><div class="empty">No records yet — add one with the button above.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

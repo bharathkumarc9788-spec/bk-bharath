@@ -1,0 +1,62 @@
+{% extends 'web/base.html' %}
+{% block page_title %}PET / Physical Education{% endblock %}
+{% block page_subtitle %}Fitness Assessment · Sports · Coach Remarks{% endblock %}
+{% block content %}
+
+{% if manage %}
+<div class="card">
+  <div class="card-title"><div class="row"><h3>🏃 Add PET Assessment</h3><span class="badge badge-blue">{{ records|length }} records</span></div></div>
+  <form method="post" action="/erp/pet/">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-group"><label>Student</label>
+        <select name="student" required>{% for s in students %}<option value="{{ s.id }}">{{ s.name }} ({{ s.register_number|default:'' }})</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Assessment Date</label><input type="date" name="assessment_date" required></div>
+      <div class="form-group"><label>Endurance</label>
+        <select name="endurance">{% for v, l in ratings %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Flexibility</label>
+        <select name="flexibility">{% for v, l in ratings %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Strength</label>
+        <select name="strength">{% for v, l in ratings %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Agility</label>
+        <select name="agility">{% for v, l in ratings %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Sports</label><input name="sports" placeholder="e.g. Football, Athletics"></div>
+      <div class="form-group"><label>Coach Remarks</label><textarea name="coach_remarks"></textarea></div>
+    </div>
+    <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Save Assessment</button></div>
+  </form>
+</div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-title"><div class="row"><h3>📊 Assessment Records</h3></div></div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>#</th><th>Student</th><th>Date</th><th>Endurance</th><th>Flexibility</th><th>Strength</th><th>Agility</th><th>Sports</th><th>Remarks</th></tr></thead>
+      <tbody>
+        {% for r in records %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><b>{{ r.student.name }}</b></td>
+            <td>{{ r.assessment_date }}</td>
+            <td>{{ r.endurance }}</td>
+            <td>{{ r.flexibility }}</td>
+            <td>{{ r.strength }}</td>
+            <td>{{ r.agility }}</td>
+            <td>{{ r.sports|default:'—' }}</td>
+            <td class="muted">{{ r.coach_remarks|default:'—' }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="9"><div class="empty">No PET assessments yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

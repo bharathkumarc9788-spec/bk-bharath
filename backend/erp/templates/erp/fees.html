@@ -1,0 +1,97 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Finance & Fee Management{% endblock %}
+{% block page_subtitle %}Fee Structure · Payments · Ledger {% endblock %}
+{% block content %}
+
+{% if manage %}
+<div class="grid2 mt">
+  <div class="card">
+    <div class="card-title"><h3>🧾 Create Fee Structure</h3></div>
+    <form method="post" action="/erp/fees/">
+      {% csrf_token %}
+      <input type="hidden" name="fee_action" value="structure">
+      <div class="form-grid mini-form">
+        <div class="form-group"><label>Fee Name (e.g. Tuition)</label><input name="name" required></div>
+        <div class="form-group"><label>Amount (₹)</label><input type="number" name="amount" min="0" step="0.01" required></div>
+        <div class="form-group"><label>Class / Section</label>
+          <select name="klass"><option value="">— All classes —</option>{% for c in classes %}<option value="{{ c.id }}">{{ c }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Frequency</label>
+          <select name="frequency"><option value="TERM">Term</option><option value="HALF_YEARLY">Half-Yearly</option><option value="YEARLY" selected>Yearly</option><option value="MONTHLY">Monthly</option></select>
+        </div>
+        <div class="form-group"><label>Description</label><textarea name="description"></textarea></div>
+      </div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Create Structure</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h3>💳 Record Payment</h3></div>
+    <form method="post" action="/erp/fees/">
+      {% csrf_token %}
+      <input type="hidden" name="fee_action" value="payment">
+      <div class="form-grid mini-form">
+        <div class="form-group"><label>Student</label>
+          <select name="student" required>{% for s in students %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Fee Structure</label>
+          <select name="fee">{% for f in structures %}<option value="{{ f.id }}">{{ f.name }} — ₹{{ f.amount }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Amount Paid (₹)</label><input type="number" name="amount" min="0" step="0.01" required></div>
+        <div class="form-group"><label>Discount (₹)</label><input type="number" name="discount" min="0" step="0.01" value="0"></div>
+        <div class="form-group"><label>Paid On</label><input type="date" name="paid_on"></div>
+        <div class="form-group"><label>Method</label>
+          <select name="method"><option value="CASH">Cash</option><option value="UPI">UPI</option><option value="CARD">Card</option><option value="BANK">Bank Transfer</option></select>
+        </div>
+        <div class="form-group"><label>Reference No.</label><input name="reference"></div>
+      </div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Record Payment</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-title">
+    <div class="row"><h3>📚 Fee Structures</h3><span class="badge badge-blue">{{ structures|length }} structures</span></div>
+  </div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>Fee</th><th>Class</th><th>Frequency</th><th>Amount</th><th>Description</th></tr></thead>
+      <tbody>
+        {% for f in structures %}
+          <tr><td><b>{{ f.name }}</b></td><td>{{ f.klass|default:'All classes' }}</td><td>{{ f.get_frequency_display }}</td><td>₹{{ f.amount }}</td><td class="muted">{{ f.description|default:'—' }}</td></tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty">No fee structures yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mt">
+  <div class="card-title">
+    <div class="row"><h3>📒 Student Fee Ledger</h3></div>
+  </div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>Student</th><th>Total Due</th><th>Paid</th><th>Balance</th><th>Status</th><th>Payments</th></tr></thead>
+      <tbody>
+        {% for l in ledger %}
+          <tr>
+            <td><b>{{ l.student.name }}</b></td>
+            <td>₹{{ l.due }}</td>
+            <td>₹{{ l.paid }}</td>
+            <td>₹{{ l.balance }}</td>
+            <td><span class="badge {% if l.status == 'Paid' %}badge-green{% elif l.status == 'Partial' %}badge-amber{% else %}badge-red{% endif %}">{{ l.status }}</span></td>
+            <td>{{ l.payments }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty">No students yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

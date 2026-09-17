@@ -1,0 +1,99 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Hostel Management{% endblock %}
+{% block page_subtitle %}Hostels · Rooms · Allocations · Occupancy{% endblock %}
+{% block content %}
+
+{% if manage %}
+<div class="grid3">
+  <div class="card">
+    <div class="card-title"><h3>🏨 Add Hostel</h3></div>
+    <form method="post" action="/erp/hostel/">
+      {% csrf_token %}
+      <input type="hidden" name="hostel_action" value="hostel">
+      <div class="form-group"><label>Hostel Name</label><input name="name" required></div>
+      <div class="form-group"><label>Warden</label><input name="warden"></div>
+      <div class="form-group"><label>Address</label><textarea name="address"></textarea></div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Add Hostel</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h3>🚪 Add Room</h3></div>
+    <form method="post" action="/erp/hostel/">
+      {% csrf_token %}
+      <input type="hidden" name="hostel_action" value="room">
+      <div class="form-group"><label>Hostel</label>
+        <select name="hostel" required>{% for h in hostels %}<option value="{{ h.id }}">{{ h.name }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Room Number</label><input name="room_number" required></div>
+      <div class="form-group"><label>Floor</label><input name="floor"></div>
+      <div class="form-group"><label>Capacity (beds)</label><input type="number" name="capacity" value="3" min="1"></div>
+      <div class="form-group"><label>Room Type</label><input name="room_type" value="Triple"></div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Add Room</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h3>🛏️ Allocate Bed</h3></div>
+    <form method="post" action="/erp/hostel/">
+      {% csrf_token %}
+      <input type="hidden" name="hostel_action" value="allocate">
+      <div class="form-group"><label>Student</label>
+        <select name="student" required>{% for s in students %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Room</label>
+        <select name="room" required>{% for r in rooms %}<option value="{{ r.room.id }}">{{ r.room }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Bed Number</label><input name="bed"></div>
+      <div class="form-group"><label>Check-in</label><input type="date" name="check_in"></div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Allocate</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-title">
+    <div class="row"><h3>🏢 Rooms & Occupancy</h3></div>
+  </div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>#</th><th>Room</th><th>Hostel</th><th>Floor</th><th>Type</th><th>Occupied / Capacity</th><th>Free Beds</th></tr></thead>
+      <tbody>
+        {% for r in rooms %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><b>{{ r.room.room_number }}</b></td>
+            <td>{{ r.room.hostel.name }}</td>
+            <td>{{ r.room.floor|default:'—' }}</td>
+            <td>{{ r.room.room_type }}</td>
+            <td>{{ r.occupied }} / {{ r.room.capacity }}</td>
+            <td>{% if r.free > 0 %}<span class="badge badge-green">{{ r.free }} free</span>{% else %}<span class="badge badge-red">Full</span>{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty">No rooms yet — add a hostel and rooms.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mt">
+  <div class="card-title">
+    <div class="row"><h3>🧑‍🎓 Active Allocations</h3></div>
+  </div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>Student</th><th>Room</th><th>Bed</th><th>Check-in</th></tr></thead>
+      <tbody>
+        {% for a in allocations %}
+          <tr><td><b>{{ a.student.name }}</b></td><td>{{ a.room.room_number }} ({{ a.room.hostel.name }})</td><td>{{ a.bed_number|default:'—' }}</td><td>{{ a.check_in }}</td></tr>
+        {% empty %}
+          <tr><td colspan="4"><div class="empty">No active allocations.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

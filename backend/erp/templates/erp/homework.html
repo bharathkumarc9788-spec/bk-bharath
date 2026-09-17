@@ -1,0 +1,92 @@
+{% extends 'web/base.html' %}
+{% load web_extras %}
+{% block page_title %}Homework & Assignment{% endblock %}
+{% block page_subtitle %}Create · Submit · Evaluate · Track{% endblock %}
+{% block content %}
+
+{% if manage %}
+<div class="card">
+  <div class="card-title">
+    <div class="row">
+      <h3>📝 Assign Homework</h3>
+      <span class="badge badge-blue">{{ rows|length }} assignments</span>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('hw-form').style.display = document.getElementById('hw-form').style.display === 'none' ? 'block' : 'none'">+ New Homework</button>
+  </div>
+  <form method="post" action="/erp/homework/" id="hw-form"
+      style="display:none; border:1px dashed var(--border); border-radius:16px; padding:18px; background:#f8f9ff">
+    {% csrf_token %}
+    <input type="hidden" name="hw_action" value="create">
+    <div class="form-grid">
+      <div class="form-group"><label>Class / Section</label>
+        <select name="klass" required>{% for c in classes %}<option value="{{ c.id }}">{{ c }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Subject</label>
+        <select name="subject"><option value="">— Any —</option>
+          {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group"><label>Title</label><input name="title" required></div>
+      <div class="form-group"><label>Due Date</label><input type="date" name="due_date"></div>
+      <div class="form-group"><label>Max Marks</label><input type="number" name="max_marks" value="10" min="0"></div>
+      <div class="form-group"><label>Description</label><textarea name="description"></textarea></div>
+    </div>
+    <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Create Homework</button></div>
+  </form>
+</div>
+{% endif %}
+
+{% for r in rows %}
+  {% if manage %}<form method="post" action="/erp/homework/" id="hwgrade-{{ r.hw.id }}">{% csrf_token %}<input type="hidden" name="hw_action" value="grade"><input type="hidden" name="homework" value="{{ r.hw.id }}"></form>{% endif %}
+<div class="card mt">
+  <div class="card-title">
+    <div class="row">
+      <h3>{{ r.hw.title }}</h3>
+      <span class="badge badge-blue">{{ r.hw.klass }} · {{ r.hw.subject.name|default:'Any subject' }}</span>
+    </div>
+    <span class="stat-chip{% if r.hw.due_date %} warn-chip{% endif %}">📅 Due {{ r.hw.due_date|default:'—' }} · {{ r.hw.max_marks }} marks</span>
+  </div>
+  <p class="muted">{{ r.hw.description|default:'No description' }}</p>
+  <div class="stat-chip">✅ {{ r.submitted }}/{{ r.total }} submitted · 🏅 {{ r.graded }} graded</div>
+
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>Student</th><th>Status</th><th>Marks</th><th>Feedback</th><th style="width:110px">Action</th></tr></thead>
+      <tbody>
+        {% for s in r.students %}
+          {% with sub=r.subs|get_item:s.id %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td><span class="badge {% if sub and sub.status == 'GRADED' %}badge-green{% elif sub %}badge-blue{% else %}badge-gray{% endif %}">{{ sub.status|default:'Pending' }}</span></td>
+            {% if manage %}
+              <td><input type="number" name="marks-{{ sub.id|default:0 }}" value="{{ sub.marks_obtained|default:'' }}" min="0" step="0.5" style="width:80px" form="hwgrade-{{ r.hw.id }}"></td>
+              <td><input name="fb-{{ sub.id|default:0 }}" value="{{ sub.feedback|default:'' }}" placeholder="Feedback…" form="hwgrade-{{ r.hw.id }}"></td>
+              <td><button class="btn btn-primary btn-sm" type="submit" form="hwgrade-{{ r.hw.id }}">💾 Grade</button></td>
+            {% elif sub and sub.status == 'GRADED' %}
+              <td><b>{{ sub.marks_obtained|default:'—' }}</b>/{{ r.hw.max_marks }}</td>
+              <td>{{ sub.feedback|default:'—' }}</td>
+              <td>—</td>
+            {% elif role == 'STUDENT' %}
+              <td>—</td><td>—</td>
+              <td>
+                <form method="post" action="/erp/homework/">
+                  {% csrf_token %}
+                  <input type="hidden" name="hw_action" value="submit">
+                  <input type="hidden" name="homework" value="{{ r.hw.id }}">
+                  <button class="btn btn-primary btn-sm" type="submit">Submit</button>
+                </form>
+              </td>
+            {% else %}
+              <td>—</td><td>—</td><td>—</td>
+            {% endif %}
+          </tr>
+          {% endwith %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% empty %}
+<div class="card"><div class="empty">No homework assigned yet.</div></div>
+{% endfor %}
+
+{% endblock %}

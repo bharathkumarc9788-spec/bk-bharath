@@ -1,0 +1,85 @@
+{% extends 'web/base.html' %}
+{% block page_title %}Subject Management{% endblock %}
+{% block page_subtitle %}Subjects · Departments · Teacher Allocation{% endblock %}
+{% block content %}
+
+{% if manage %}
+<div class="grid2 mt">
+  <div class="card">
+    <div class="card-title"><h3>➕ Add Subject</h3></div>
+    <form method="post" action="/erp/subjects/">
+      {% csrf_token %}
+      <input type="hidden" name="sub_action" value="add">
+      <div class="form-grid mini-form">
+        <div class="form-group"><label>Subject Name</label><input name="name" required></div>
+        <div class="form-group"><label>Code</label><input name="code"></div>
+        <div class="form-group"><label>Department</label>
+          <select name="department"><option value="">— General —</option>
+            {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Save Subject</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h3>🧑‍🏫 Allocate to Teacher</h3></div>
+    <form method="post" action="/erp/subjects/">
+      {% csrf_token %}
+      <input type="hidden" name="sub_action" value="allocate">
+      <div class="form-grid mini-form">
+        <div class="form-group"><label>Subject</label>
+          <select name="subject" required>{% for s in subjects %}<option value="{{ s.id }}">{{ s.name }} ({{ s.department.name }})</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Teacher</label>
+          <select name="teacher" required>{% for t in teachers %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
+        </div>
+      </div>
+      <div class="mt"><button class="btn btn-primary btn-sm" type="submit">Allocate</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-title">
+    <div class="row">
+      <h3>📚 Subjects & Allocation</h3>
+      <span class="badge badge-blue">{{ rows|length }} subjects</span>
+    </div>
+  </div>
+  <div class="table-wrap mt">
+    <table>
+      <thead><tr><th>#</th><th>Subject</th><th>Department</th><th>Code</th><th>Allocated Teachers</th><th style="width:110px">Action</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><b>{{ r.subject.name }}</b></td>
+            <td>{{ r.subject.department.name|default:'—' }}</td>
+            <td>{{ r.subject.code|default:'—' }}</td>
+            <td>{{ r.teachers }}</td>
+            <td>
+              {% if manage %}
+                {% for t in r.subject.teachers.all|slice:":1" %}
+                  <form method="post" action="/erp/subjects/" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="sub_action" value="deallocate">
+                    <input type="hidden" name="subject" value="{{ r.subject.id }}">
+                    <input type="hidden" name="teacher" value="{{ t.id }}">
+                    <button class="btn btn-sm btn-danger" title="Remove {{ t.name }}">➖</button>
+                  </form>
+                {% endfor %}
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty">No subjects yet — add one on the left.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
